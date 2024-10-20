@@ -8,7 +8,7 @@ The notebooks are for informational use only; no warranties, either expressed or
 
 ---
 
-The example CPTs were downloaded from ISSMGE website on 20 October 2024 from the following page: http://140.112.12.21/issmge/tc304.htm
+The example CPT tests were downloaded from ISSMGE website on 20 October 2024 from the following page: http://140.112.12.21/issmge/tc304.htm
 
 The above page also contains a large global database of real CPT data, the **Global-CPT/3/1196** database which was developed by Jianye Ching (email: jyching@gmail.com).
 For further details please refer to the following paper:
