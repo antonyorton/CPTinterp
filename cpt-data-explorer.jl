@@ -21,6 +21,7 @@ begin
 	using DataFrames
 	using Statistics
 	using CSV
+	using Measures: mm
 end
 
 # ╔═╡ ca3aafa1-7e16-4322-a9f0-e70de7be3922
@@ -50,17 +51,14 @@ md"Raw data column names:"
 # ╔═╡ 749a1337-9835-46d9-82ed-ad79534f6358
 begin
 	name_col = "name"
-	depth_col = "depth_m" # metres are assumed for depth units
-	qc_col = "qc_MPa"
-	qc_units = "MPa"
-	fs_col = "fs_kPa"
-	fs_units = "kPa"
-	u2_col = "u2_kPa"
-	u2_units = "kPa"
+	depth_col = "depth_m" 	# metres are assumed for depth units
+	qc_col = "qc_MPa"  		#qc must be in MPa
+	fs_col = "fs_kPa"  		#fs must be in kPa
+	u2_col = "u2_kPa"  		#u2 must be in kPa
 end;
 
 # ╔═╡ 95ae4333-eb2b-4211-afdf-119f34b25fe2
-md"Derived data column names (these do not exist in the raw data):"
+md"Derived data column names (these do not exist in the raw data and should not need to be changed):"
 
 # ╔═╡ b8019c7e-add0-4492-9911-9253c2ed31d3
 begin
@@ -182,7 +180,7 @@ md"**Note:** This important parameter ``I_{c}`` still needs some checking agains
 
    **Returns:** ( Ic , Qtn )"""
 function get_Ic_and_Qtn(qt,Qt,sigmav,Fr)
-	#should really check that the lengths of the inputs match
+	#Note (for improvement) could check here that the lengths of the inputs match
 	
 	nval = ones(length(qt)) #Initial nval
 	curr_sumsq = nval'*nval
@@ -282,17 +280,30 @@ function get_K0_and_OCR(su, sigmav_effective; ϕdeg = 26)
 	return (K₀, OCR)
 end
 
-# ╔═╡ aa3dead4-07ca-4317-9410-ae264d927889
-@bind myloc Select(locations)
+# ╔═╡ 7dd184ef-3ea0-4e45-88b9-7f20dae6bbe2
+md"------------------
+##### Visualise data for a selected location
+(the cell below must be enabled)
 
-# ╔═╡ d9253408-3fac-4990-9333-b53a272fe6e5
-md"Selected location: **$myloc**"
+- For each chart selected, a pdf will be created in the local directory where this notebook is saved"
+
+# ╔═╡ 188684ed-2af7-4a5a-b169-115ce9af6130
+md"-------------------------------
+##### Prepare pdf output for all locations"
+
+# ╔═╡ d184d393-e768-4043-9113-574d4d7ee6dd
+@bind tval Clock(max_value = length(locations) + 1)
+
+# ╔═╡ 0f0861ef-ced3-45fc-9f83-7ba63dd7eba3
+md"To prepare pdfs for all locations please activate the cell below and press the *start* button above\
+"
 
 # ╔═╡ 72aeebf8-551d-463f-af39-ae86019f5362
 begin
 data = raw_data[ ( raw_data[:,name_col] .== myloc ) , [name_col, depth_col, qc_col, fs_col, u2_col]]
 data = sort(data,[depth_col])
 data[!,u2_col] = max.(data[!,u2_col],0) #set negative u2 to zero (I noticed some obviously bad looking data here)
+println("CTP data extracted for ",myloc)
 end;
 
 # ╔═╡ 3cf07c2b-4771-4aec-a5ac-ba6d550f974c
@@ -300,7 +311,8 @@ begin
 data[!,qc_col] = max.(0,data[!,qc_col])
 data[!,fs_col] = max.(0,data[!,fs_col])
 data[!,u2_col] = max.(0,data[!,u2_col])
-end
+println("Removed negative values in qc, fs and u2")
+end;
 
 # ╔═╡ bc5fd5a4-0417-40fa-84e9-23f0317c4a9e
 data[!,u0_col] = max.(0,9.81*(data[!,depth_col] .- gwl_depth));
@@ -370,7 +382,9 @@ data
 begin
 l = @layout [a b c d; e f g h]
 
-p1 = plot(data[:,qc_col],data[:,depth_col], xlims = (0,10), xticks = 0:2:10, xlabel = "qc, qt (MPa)", ylabel = "Depth (m)")
+#Note, pdf margin control is a little messy. I apply a left margin to p1 and a right margin to p4
+	
+p1 = plot(data[:,qc_col],data[:,depth_col], xlims = (0,10), xticks = 0:2:10, xlabel = "qc, qt (MPa)", ylabel = "Depth (m)", left_margin = 10mm)
 plot!(data[:,qt_col],data[:,depth_col])
 
 p2 = plot(data[:,fs_col],data[:,depth_col], xlims = (0,500), xticks = 0:100:500, xlabel = "fs (kPa)")
@@ -378,31 +392,54 @@ p2 = plot(data[:,fs_col],data[:,depth_col], xlims = (0,500), xticks = 0:100:500,
 p3 = plot(data[:,u2_col],data[:,depth_col], xlims = (0,500), xticks = 0:100:500, xlabel = "u2 (kPa)")
 plot!(data[:,u0_col],data[:,depth_col], color=:black, linestyle=:dash)
 
-p4 = plot(data[:,γtotal_col],data[:,depth_col], xlims = (0,22), xticks = 0:5:22, xlabel = "Unit weight (kN/m3)")
+p4 = plot(data[:,γtotal_col],data[:,depth_col], xlims = (0,25), xticks = 0:5:30, xlabel = "Unit weight (kN/m3)", right_margin = 7mm)
 
-p5 = plot(data[:,Ic_col],data[:,depth_col], xlims = (0,3.5), xticks = 0:0.5:3.5, xlabel = "Ic value (SBTn)")
+p5 = plot(data[:,Ic_col],data[:,depth_col], xlims = (0,3.5), xticks = 0:1:3.5, xlabel = "Ic value (SBTn)", ylabel = "Depth (m)")
 
-p6 = plot(data[:,Vs_col],data[:,depth_col], xlims = (0,750), xticks = 0:200:750, xlabel = "Vs (m/s)")
+p6 = plot(data[:,Vs_col],data[:,depth_col], xlims = (0,800), xticks = 0:200:750, xlabel = "Vs (m/s)")
 
-p7 = plot(data[:,su_col],data[:,depth_col], xlims = (0,300), xticks = 0:50:300, xlabel = "su (kPa)")
+p7 = plot(data[:,su_col],data[:,depth_col], xlims = (0,200), xticks = 0:50:200, xlabel = "su (kPa)")
 
 p8 = plot(data[:,OCR_col],data[:,depth_col], xlims = (0,8), xticks = 0:1:8, xlabel = "OCR")
 	
-# plot!(xticks = 0:1:10, yticks = 0:1:15)
-# xlims!((0,10))
-plot(p1, p2, p3, p4, p5, p6, p7, p8, layout = l)
-plot!(legend = false, xlabelfontsize = 8, ylabelfontsize = 8)
-plot!(size=(800, 900))
+
+
+mytitle = "\nCPT interpretation:   " * myloc * "   (draft - for information only)"; #Note I need to add a \n before the title to give a blank space above
+plot!(size=(850, 1200))
+plot!(p1, p2, p3, p4, p5, p6, p7, p8, layout = l, plot_title = mytitle, plot_titlevspan = 0.03, plot_titlefontsize = 10)
+plot!(legend = false, xlabelfontsize = 8, ylabelfontsize = 8, tickfontsize = 8)
+plot!(minorticks = 2, minorgrid = true, minorgridalpha = 0.05)
+plot!(top_margin = 3mm)
 yticks!((0:1:15))
 ylims!((0,15))
 yflip!(true)
+
+#Overall figure setup
+			
 end
+
+# ╔═╡ 1da76aa7-1aee-4ba0-bfc8-6a554da788aa
+begin
+savefig("CPT_interp_" * myloc * ".pdf")
+println("Location ",mod1(tval,length(locations))," of ", length(locations))
+println("Created pdf for: ",myloc)
+end;
+
+# ╔═╡ aa3dead4-07ca-4317-9410-ae264d927889
+@bind myloc Select(locations)
+
+# ╔═╡ 26029d19-ae4c-4182-9a7f-61ea299dd19d
+# ╠═╡ disabled = true
+#=╠═╡
+myloc = locations[mod1(tval,length(locations))];
+  ╠═╡ =#
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Measures = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
@@ -410,6 +447,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 [compat]
 CSV = "~0.10.14"
 DataFrames = "~1.6.1"
+Measures = "~0.3.2"
 Plots = "~1.40.8"
 PlutoUI = "~0.7.59"
 """
@@ -420,7 +458,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "52c61ad8523af940a0b2ebe4badd242bcee23da8"
+project_hash = "16d18ff7b0bfa306fe0088348395510ff02ad4a9"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -1650,19 +1688,19 @@ version = "1.4.1+1"
 
 # ╔═╡ Cell order:
 # ╠═8ef24310-88e3-11ef-3651-5785e8881525
-# ╠═ca3aafa1-7e16-4322-a9f0-e70de7be3922
+# ╟─ca3aafa1-7e16-4322-a9f0-e70de7be3922
 # ╠═292b8bf4-e0fe-45a8-b044-5436c7270095
-# ╟─68689e51-cbce-4d01-a2a2-a09ba086790f
+# ╠═68689e51-cbce-4d01-a2a2-a09ba086790f
 # ╠═749a1337-9835-46d9-82ed-ad79534f6358
 # ╟─95ae4333-eb2b-4211-afdf-119f34b25fe2
-# ╠═b8019c7e-add0-4492-9911-9253c2ed31d3
+# ╟─b8019c7e-add0-4492-9911-9253c2ed31d3
 # ╟─6fb20552-4e91-4627-bbf8-c7bf26fb5594
 # ╠═a00fa3de-8bc6-4f01-bb49-bed3e64812f5
 # ╟─967288f9-df25-4d82-9f2d-33255e362986
 # ╠═53a9b815-af39-43df-bb73-a74e21626098
 # ╟─dd5a906e-d65c-4ef7-bf29-a995b8d35046
 # ╟─11603b53-11e9-4190-bcde-3b4aad8d2cb7
-# ╠═eeacd8ce-b723-41ec-8ad5-5fa2a1ef0f85
+# ╟─eeacd8ce-b723-41ec-8ad5-5fa2a1ef0f85
 # ╟─3cf07c2b-4771-4aec-a5ac-ba6d550f974c
 # ╟─c5ba57ce-6b85-4cd4-8b51-0df3664988d2
 # ╟─2086523d-23f5-4bf8-b760-832eb5bc9bfd
@@ -1692,9 +1730,14 @@ version = "1.4.1+1"
 # ╠═094bed27-2fe6-40e3-b702-b51f052145f0
 # ╠═6b31320b-c4f4-41a0-8d4c-c674fe15d8bb
 # ╟─8af25062-e819-4b98-9621-c89e45bf6b46
-# ╟─d9253408-3fac-4990-9333-b53a272fe6e5
 # ╟─72aeebf8-551d-463f-af39-ae86019f5362
-# ╠═5e4f4093-c3bb-4b77-a875-900924756dfa
-# ╟─aa3dead4-07ca-4317-9410-ae264d927889
+# ╟─5e4f4093-c3bb-4b77-a875-900924756dfa
+# ╟─7dd184ef-3ea0-4e45-88b9-7f20dae6bbe2
+# ╠═aa3dead4-07ca-4317-9410-ae264d927889
+# ╟─188684ed-2af7-4a5a-b169-115ce9af6130
+# ╟─d184d393-e768-4043-9113-574d4d7ee6dd
+# ╟─0f0861ef-ced3-45fc-9f83-7ba63dd7eba3
+# ╠═26029d19-ae4c-4182-9a7f-61ea299dd19d
+# ╟─1da76aa7-1aee-4ba0-bfc8-6a554da788aa
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
