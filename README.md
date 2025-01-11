@@ -4,7 +4,7 @@ This repository contains (Pluto) notebooks for the interpretation of geotechnica
 
 The file _example_input.csv_ contains four example CPTs in the required csv format.
 
-- cpt_notebook.jl is a preliminary attempt at pile load-settlement predictions, work in progress
+- cpt_notebook.jl is a preliminary attempt at pile load-settlement predictions, work in progress.
 
 The notebooks are for informational use only; no warranties, either expressed or implied, regarding the accuracy or reliability of the output are provided. Use of this notebook releases Antony Orton of any liability of any kind.
 
