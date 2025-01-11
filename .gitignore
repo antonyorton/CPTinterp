@@ -5,3 +5,4 @@ example-CPT-data/
 julia_vs_pandas_cheat*
 experimental/
 CPT_interp_*
+*.html
