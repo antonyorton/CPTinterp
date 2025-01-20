@@ -30,10 +30,10 @@ end
 CairoMakie.activate!(type = "svg");
 
 # ╔═╡ 3002b922-11f1-460e-b4ce-d69b9b952b7b
-nbsp = @html_str"&nbsp"; #whitespace element, for markdown use $nbsp
+nbsp = @html_str"&nbsp"; #single whitespace for markdown (use $nbsp)
 
 # ╔═╡ d46944b9-b2db-49e3-bf83-188f5a8ad83d
-nbsp4 = @html_str"&nbsp; &nbsp; &nbsp; &nbsp;";
+nbsp4 = @html_str"&nbsp; &nbsp; &nbsp; &nbsp;"; #quadruple whitespace for markdown
 
 # ╔═╡ 38c42433-425f-4f38-a99a-5ed2e4977ac9
 md"""Introduction
@@ -76,7 +76,7 @@ md"Parameters to adjust the smoothing and coarseness of the data for analysis\
 (note that these will need to be adjusted by hand, **errors** can occur on some settings)"
 
 # ╔═╡ 171bdb61-6e79-408a-8835-1706a415e688
-knots = 15; num_steps_along_pile = 45;
+knots = 21; num_steps_along_pile = 34;
 
 # ╔═╡ d1024dbc-436e-44ed-96cc-1e030547575c
 md""" Use the coarse grid and smoothed values for the interpretation."""
@@ -111,19 +111,19 @@ md"Pile type"
 md"Pile toe depth in meters below ground"
 
 # ╔═╡ 37c24610-1395-489e-b6c8-da911dc75ec3
-pile_toe_depth = 45.0;
+pile_toe_depth = 17.0;
 
 # ╔═╡ ce139f6a-9b3d-4baf-92d5-d6a8fe716381
 md"Pile diameter in metres"
 
 # ╔═╡ 32890499-7639-47e4-8474-9db062c9783a
-pile_diameter = 0.610;
+pile_diameter = 0.457;
 
 # ╔═╡ c7d3a7bb-876d-4438-9b7f-de9b778ba324
 	md"""Pile Young's modulus in MPa"""
 
 # ╔═╡ 079ea043-51a9-4f82-a2db-bd764d592ae3
-Epile_MPa = 13000;
+Epile_MPa = 12700;
 
 # ╔═╡ 6edf2a4b-4672-437e-b8da-d0d91c9f924f
 md""" -------------
@@ -134,7 +134,7 @@ md""" -------------
 md"Depth to groundwater in metres below ground"
 
 # ╔═╡ cc47b481-ba6f-4bf3-959d-1d20d85a01e4
-gw_depth = 0.0;
+gw_depth = 3.0;
 
 # ╔═╡ f7bb1887-3a38-4752-9ee2-769734bed772
 md""" -----------------
@@ -212,14 +212,10 @@ The ultimate shaft resistance, ``f_{s}``, is obtained as follows:\
 $nbsp $nbsp $nbsp $nbsp``\alpha`` is a factor dependent on soil and pile type.\
 $nbsp $nbsp $nbsp $nbsp``f_{smax}`` is a the limiting shaft resistance dependent on soil and pile type.
 \
-\
 """
 
-# ╔═╡ 0afcf3a7-74aa-47ba-a579-938b173cdd79
-md"Limit ``f_{shaft}`` to ``f_{smax}``"
-
-# ╔═╡ 9bdb3f3e-afeb-417a-b2e1-d55b316cd47e
-md"TODO: It looks like this next cell should be a function"
+# ╔═╡ d980942c-e160-472b-98eb-a5a939e04d1a
+md"""This calculation is provided in the function `get_ultimate_shaft_resistance()`"""
 
 # ╔═╡ 8cd9047c-3796-46f0-a27f-d98ef86888a6
 md"""-------------
@@ -246,17 +242,44 @@ md"""
 """
 
 # ╔═╡ 64013deb-af90-465d-a8f5-581e0f6baab6
-md"""We use a formula by Randolph and Wroth (1978) to estimate the initial pile head load to displacement ratio.
+md"""We use a formula by Randolph and Wroth (1978) to estimate the initial pile head stiffness ``k_{0}``.
+"""
+
+# ╔═╡ 7d5bfca5-5ebd-4e5a-8d7f-0e9c1684a922
+md"""
+The small strain elastic modulus along the pile shaft was assumed to vary linearly, allowing us to calculate:\
+ $(nbsp4)``E_{L}``: $(nbsp4)The small strain elastic modulus at the base of the shaft\
+$(nbsp4)``E_{L/2}``: $(nbsp) $(nbsp) The small strain elastic modulus at the midpoint of the shaft\
+"""
+
+# ╔═╡ fe095cea-69a2-46a1-823c-dc1bb7613469
+md"""
+#### Pile load displacement curve
 """
 
 # ╔═╡ a8592821-3aae-45a7-abb9-0b3cf7e40d9e
+temploads = 0:0.25:1.75;
 
+# ╔═╡ 723a758c-941e-450f-ac2c-60b6a7e140db
+capacity_factor = 0.90
 
-# ╔═╡ 97e12fce-2e96-49fd-8476-0ea178de8c97
+# ╔═╡ fef5eba2-7457-4bdf-a889-3650ba38335f
+md"""--------------------------
+#### Load carried by pile shaft at ``P =``$(capacity_factor)``P_{ult}``
 
+"""
 
-# ╔═╡ 338baa40-0742-4e48-9aca-6e7489c45e1b
+# ╔═╡ 9ea12381-d2e4-442a-bb67-95fdf5f67437
+md"""Calculate the resistance (MPa) for each element of the shaft"""
 
+# ╔═╡ 8335941c-dc8a-4dd9-a558-5314c722c523
+md"""Calculate the load (MN) carried by each element of the shaft"""
+
+# ╔═╡ 53f5866b-eecc-423a-9f64-b22a0bfc2de9
+md"""Calculate the load (MN) carried by the shaft below a given depth"""
+
+# ╔═╡ 6c5bdbe9-3253-4f6e-87aa-d62ba21016d2
+md"""#### Load distribution along pile shaft"""
 
 # ╔═╡ 4e9ef2a1-e2a0-4209-8eb5-6212fb4fdb5f
 md"""---------------------
@@ -510,14 +533,8 @@ end
 # ╔═╡ 2a956b1c-be86-4218-a8d4-e6baafe048dd
 @bind pile_type Select(sort(collect(keys(get_alpha_shaft_CPT2012()))))
 
-# ╔═╡ 55f7141e-3908-4e88-a7bd-01e4d642f4ce
-fsmax = get_fsmax_shaft_CPT2012()[pile_type] .* 0.001;
-
 # ╔═╡ 91234904-63e7-4949-a7b0-27ad0de2ab5b
 kc = get_kc_base_CPT2012()[pile_type] #kc for [silt and clay, intermediate, sand]
-
-# ╔═╡ 89ac8707-a32d-4d1f-81f5-ed8190046a08
-alpha = get_alpha_shaft_CPT2012()[pile_type];
 
 # ╔═╡ 9c3698a6-2293-419c-82c2-8e82dda16683
 # get_fsol_shaft_CPT2012(qc_MPa, Ic)
@@ -546,6 +563,32 @@ function get_fsol_shaft_CPT2012(qc_MPa::AbstractVector{Float64}, Ic::AbstractVec
 
     return (1 .- sand_clay_ratio) .* ysand .+ sand_clay_ratio .* yclay
 end
+
+# ╔═╡ 443b2768-4db8-4ec4-8adc-f5a18dc5cf67
+"""
+	function get_ultimate_shaft_resistance(qc_MPa::AbstractVector{Float64}, Ic::AbstractVector{Float64}, pile_type::String; factor::Float64 = 1.0)
+
+	Returns the shaft resistance (MPa) for each element.
+
+Set `factor` = 1.0 for ultimate resistance, and `factor` < 1.0 for resistances below the ultimate load
+"""
+function get_ultimate_shaft_resistance(qc_MPa::AbstractVector{Float64}, Ic::AbstractVector{Float64}, pile_type::String; factor::Float64 = 1.0)
+	if (factor > 1.0)||(factor < 0.0)
+		return DomainError(factor, "[factor] must be between 0.0 and 1.0 inclusive")
+	end
+	
+	fsol = get_fsol_shaft_CPT2012(qc_MPa, Ic) .* 0.001
+	alpha = get_alpha_shaft_CPT2012()[pile_type];
+	fsmax = get_fsmax_shaft_CPT2012()[pile_type] .* 0.001
+	soil_type_CPT2012 = get_soil_type_CPT2012(Ic)
+	fshaft_unclipped = factor * fsol .* alpha[soil_type_CPT2012]
+	# Clip to fsmax
+	fshaft = fshaft_unclipped[:]
+	fshaft[fshaft_unclipped .> fsmax[soil_type_CPT2012]] = fsmax[soil_type_CPT2012][fshaft_unclipped .> fsmax[soil_type_CPT2012]]
+
+	return fshaft
+end
+	
 
 # ╔═╡ 036bc15e-aa9b-4359-9aeb-9832649d6afe
 # get_average_qc_at_pile_base(depth_m, qc_MPa, pile_toe_depth, pile_diameter)
@@ -591,9 +634,6 @@ end
 
 # ╔═╡ fe36d366-ec55-4272-a19c-55f3cfe13305
 # Vs = get_Vs(depth_m, qc_MPa, u2_MPa, gw_depth, gamma = gamma_soil, a = 0.73)
-
-# ╔═╡ e463e107-f750-45ce-835c-ed0e0b2eb573
-
 
 # ╔═╡ 016e4774-af9d-4ae3-8a0a-dbec2d240884
 # Ic = get_Ic(depth_m, qc_MPa, u2_MPa, gw_depth, gamma = gamma_soil, a = 0.73)
@@ -720,7 +760,7 @@ function read_delimited_text_file(filepath::String; delim::AbstractChar=',', T::
 end
 
 # ╔═╡ acb1bb78-6ff9-4b9a-85bd-b56c726635a1
-data = read_delimited_text_file("../data/CPT-Fellenius_299.csv",delim = '\t');
+data = read_delimited_text_file("../data/CPT-B1.csv",delim = '\t');
 
 # ╔═╡ a8117f4a-a2fb-4a5f-bce2-0f88819a22a8
 mykeys = collect(keys(data))
@@ -819,20 +859,8 @@ kc_at_base = kc[soil_type_CPT2012[depth_m .== pile_toe_depth]][1]
 # ╔═╡ d50e9d4c-2962-4735-bea8-4bd20d120f32
 ult_base_MN = round(pi * pile_diameter ^2 / 4 * kc_at_base * qc_avg_base, digits = 3)
 
-# ╔═╡ ca06f190-32ab-4dc7-89c6-2a643b41419d
-fsol = get_fsol_shaft_CPT2012(qc_MPa, Ic) .* 0.001
-
-# ╔═╡ 68cbf8cc-b899-4f8c-8d43-3c873d2c332e
-fshaft_unclipped = fsol .* alpha[soil_type_CPT2012];
-
-# ╔═╡ 7c8a457b-2fc2-4657-870c-3f1cfaffe0cd
-begin
-	fshaft = fshaft_unclipped[:]
-	fshaft[fshaft_unclipped .> fsmax[soil_type_CPT2012]] = fsmax[soil_type_CPT2012][fshaft_unclipped .> fsmax[soil_type_CPT2012]]
-end;
-
-# ╔═╡ c1660661-2093-42aa-ac38-6f0341a28a46
-fshaft
+# ╔═╡ d8c6bcc9-355d-46ca-b13a-e130e8895ede
+fshaft = get_ultimate_shaft_resistance(qc_MPa, Ic, pile_type, factor = 1.0)
 
 # ╔═╡ e4f3b3bb-f913-400f-b0e0-bcb2cba01d09
 ult_shaft_MN = round(pi * pile_diameter * mean(fshaft[depth_m .<= pile_toe_depth .&& depth_m .> 0.0]) * pile_toe_depth, digits = 3)
@@ -841,7 +869,7 @@ ult_shaft_MN = round(pi * pile_diameter * mean(fshaft[depth_m .<= pile_toe_depth
 pile_ult_resistance = round(ult_shaft_MN + ult_base_MN, digits = 3);
 
 # ╔═╡ e5af32ab-6eb3-46d5-8a13-6d6efb8c8e9d
-pile_head_loads = 0.01:0.01:0.92*pile_ult_resistance;
+pile_head_loads = 0.01:0.01:0.90*pile_ult_resistance;
 
 # ╔═╡ b4291248-c6f6-49ae-b702-b64169a96b3a
 	md"""----------------------
@@ -853,6 +881,33 @@ The ulitimate resistance of the pile is **$(pile_ult_resistance) MN**, comprisin
  * Ultimate base resistance of $(ult_base_MN) MN
 -------------------
 -------------------"""
+
+# ╔═╡ 97e12fce-2e96-49fd-8476-0ea178de8c97
+fshaft_factored = get_ultimate_shaft_resistance(qc_MPa, Ic, pile_type, factor = capacity_factor)
+
+# ╔═╡ 338baa40-0742-4e48-9aca-6e7489c45e1b
+Qshaft_factored = append!([0.0],pi * pile_diameter * (depth_m[2:end] .- depth_m[1:end-1]) .* 0.5 .* (fshaft_factored[2:end] .+ fshaft_factored[1:end-1]))
+
+# ╔═╡ bb86eff9-f3ea-4ade-ae3c-5feeac9d8e34
+begin 
+	mydepth = depth_m[depth_m .<= pile_toe_depth]
+	myshaftload = zeros(Float64,length(mydepth))
+	myshaftload[1] = capacity_factor * pile_ult_resistance
+	for i=2:length(mydepth)
+		myshaftload[i] = myshaftload[i-1] - Qshaft_factored[i]
+	end
+ end
+
+# ╔═╡ 95e7a0d6-27c9-4221-b686-f681714c102e
+pile_ult_resistance * capacity_factor - myshaftload[end]
+
+# ╔═╡ b1b1c43f-cc35-4c18-a4ff-5ea0fb8996e6
+begin
+	figShaftLoad = Figure(size = (350,600))
+	Axis(figShaftLoad[1,1], xticks = (0:1.0:pile_ult_resistance), yticks = yticks = (ytick_min:0), limits = ((0,pile_ult_resistance), (-pile_toe_depth - 1, 0)), xlabel = "Load (MN)", ylabel = "Depth (m)")
+	lines!(myshaftload, -mydepth)
+	figShaftLoad
+end
 
 # ╔═╡ 9efc1e45-da4a-4ec4-a324-d4ba409d82d9
 """
@@ -900,18 +955,28 @@ displacement = get_pile_head_displacement(k0, pile_head_loads, pile_ult_resistan
 # ╔═╡ c46f48bb-e03b-4b90-95cb-513039d5416f
 begin
 	figDisp = Figure(size = (600,400))
-	Axis(figDisp[1,1], xticks = (0:0.025:0.2), yticks = (0:0.5:pile_ult_resistance))
+	Axis(figDisp[1,1], xticks = (0:0.025:0.2), yticks = (0:0.5:pile_ult_resistance), xlabel = "Displacement (m)", ylabel = "Pile head load (MN)")
 	lines!(figDisp[1,1], displacement, pile_head_loads)
 	figDisp
+end
+
+# ╔═╡ 42a008a8-0b44-4042-9be1-743941c56843
+begin
+	print("Load (MN),  Disp (mm)\n")
+	for i=2:length(temploads)
+		print(round(pile_head_loads[pile_head_loads .== temploads[i]][1], digits = 2),",    ",round(displacement[pile_head_loads .== temploads[i]][1],digits = 4),"\n")
+	end
 end
 
 # ╔═╡ aa4bfc30-6e61-48b9-805e-7d7088946de7
 begin
 	#Plot configuration for Ic, Vs and E₀
 	Vs_alt = 118.8 .* log10.(1000 * fs_MPa) .+ 18.5 #alternative Vs for information
+	
 	figIc = Figure(size = (600,600))
+	
 	Axis(figIc[1,1], xticks = (0:0.5:3.0), yticks = (ytick_min:0), xlabel = "Ic", yticklabelsize = axislabelsize, xticklabelsize = axislabelsize)
-	Axis(figIc[1,2], xticks = (0:50:300), yticks = (ytick_min:0), xlabel = "Vs (m/s)", yticklabelsize = axislabelsize, xticklabelsize = axislabelsize)
+	Axis(figIc[1,2], xticks = (0:50:300), yticks = (ytick_min:0),  xlabel = "Vs (m/s)", yticklabelsize = axislabelsize, xticklabelsize = axislabelsize)
 	Axis(figIc[1,3], xticks = (0:100:maximum(E0)), yticks = (ytick_min:0), xlabel = "E₀ (MPa)", yticklabelsize = axislabelsize, xticklabelsize = axislabelsize)
 	lines!(figIc[1,1], Ic, -depth_m)
 	lines!(figIc[1,1], get_soil_type_CPT2012(Ic), -depth_m)
@@ -2722,14 +2787,8 @@ version = "3.6.0+0"
 # ╠═00a15171-61c0-4ed8-8db6-203cc288fba6
 # ╟─3cb2c6ba-a463-4e58-9d3b-3d8577363784
 # ╟─433be51b-8738-42d2-92c0-0f62344aab3f
-# ╠═ca06f190-32ab-4dc7-89c6-2a643b41419d
-# ╠═89ac8707-a32d-4d1f-81f5-ed8190046a08
-# ╠═55f7141e-3908-4e88-a7bd-01e4d642f4ce
-# ╠═68cbf8cc-b899-4f8c-8d43-3c873d2c332e
-# ╟─0afcf3a7-74aa-47ba-a579-938b173cdd79
-# ╟─9bdb3f3e-afeb-417a-b2e1-d55b316cd47e
-# ╠═7c8a457b-2fc2-4657-870c-3f1cfaffe0cd
-# ╠═c1660661-2093-42aa-ac38-6f0341a28a46
+# ╟─d980942c-e160-472b-98eb-a5a939e04d1a
+# ╠═d8c6bcc9-355d-46ca-b13a-e130e8895ede
 # ╠═e4f3b3bb-f913-400f-b0e0-bcb2cba01d09
 # ╟─8cd9047c-3796-46f0-a27f-d98ef86888a6
 # ╟─a30fb07b-ec4a-4e41-be61-70718894516a
@@ -2741,15 +2800,27 @@ version = "3.6.0+0"
 # ╟─b4291248-c6f6-49ae-b702-b64169a96b3a
 # ╟─15715b84-c935-4903-ae55-dc115c530dab
 # ╟─64013deb-af90-465d-a8f5-581e0f6baab6
+# ╟─7d5bfca5-5ebd-4e5a-8d7f-0e9c1684a922
 # ╠═0b104fff-80fe-43e9-be05-99521aeb0535
 # ╠═d57d9ea9-1ed4-4f46-bcc5-d498e5a0ac00
 # ╠═6c21fe16-9858-424a-9a4c-890c452e6514
 # ╠═e5af32ab-6eb3-46d5-8a13-6d6efb8c8e9d
 # ╠═4f9e4011-e02e-4fb7-a76f-d4ac0ca3ad43
-# ╠═c46f48bb-e03b-4b90-95cb-513039d5416f
-# ╠═a8592821-3aae-45a7-abb9-0b3cf7e40d9e
+# ╟─fe095cea-69a2-46a1-823c-dc1bb7613469
+# ╟─c46f48bb-e03b-4b90-95cb-513039d5416f
+# ╟─a8592821-3aae-45a7-abb9-0b3cf7e40d9e
+# ╟─42a008a8-0b44-4042-9be1-743941c56843
+# ╟─fef5eba2-7457-4bdf-a889-3650ba38335f
+# ╠═723a758c-941e-450f-ac2c-60b6a7e140db
+# ╟─9ea12381-d2e4-442a-bb67-95fdf5f67437
 # ╠═97e12fce-2e96-49fd-8476-0ea178de8c97
+# ╟─8335941c-dc8a-4dd9-a558-5314c722c523
 # ╠═338baa40-0742-4e48-9aca-6e7489c45e1b
+# ╟─53f5866b-eecc-423a-9f64-b22a0bfc2de9
+# ╠═bb86eff9-f3ea-4ade-ae3c-5feeac9d8e34
+# ╠═95e7a0d6-27c9-4221-b686-f681714c102e
+# ╟─6c5bdbe9-3253-4f6e-87aa-d62ba21016d2
+# ╠═b1b1c43f-cc35-4c18-a4ff-5ea0fb8996e6
 # ╟─4e9ef2a1-e2a0-4209-8eb5-6212fb4fdb5f
 # ╟─c0be21b4-a70a-4dc5-b2b9-dba8ff243a99
 # ╟─dc5cb03e-2fda-4f0c-a580-0deada74707d
@@ -2774,6 +2845,7 @@ version = "3.6.0+0"
 # ╟─6baf7417-83a5-49d8-9099-6ef2f04b1c89
 # ╠═91d1251d-8c65-4183-ae00-2b41aee4d84a
 # ╟─c9eaf4aa-a09d-4792-b0f5-2437bb167f22
+# ╟─443b2768-4db8-4ec4-8adc-f5a18dc5cf67
 # ╠═5c349b51-9dd2-47f0-9f9f-eab2aec35d0a
 # ╟─4860e77a-1ece-440e-9d29-44e4b411546d
 # ╠═bae24b61-0299-4a88-8672-dfcf43646e2d
@@ -2786,7 +2858,6 @@ version = "3.6.0+0"
 # ╟─76f39ef1-e8bf-4a62-9884-0ff73bedf128
 # ╠═fe36d366-ec55-4272-a19c-55f3cfe13305
 # ╟─9efc1e45-da4a-4ec4-a324-d4ba409d82d9
-# ╠═e463e107-f750-45ce-835c-ed0e0b2eb573
 # ╠═016e4774-af9d-4ae3-8a0a-dbec2d240884
 # ╟─5635535b-65fc-4d1f-8b62-6c863885fb46
 # ╠═b2a04e45-498f-4e8f-99d5-3c5080209d35
