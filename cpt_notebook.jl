@@ -24,6 +24,7 @@ begin
 	using DataInterpolations
 	using Statistics
 	using LsqFit
+	using PrettyTables
 	CairoMakie.activate!(type = "svg");
 	nbsp = @html_str"&nbsp"; #single whitespace for markdown (use $nbsp)	
 	nbsp4 = @html_str"&nbsp; &nbsp; &nbsp; &nbsp;"; # 4x whitespace for markdown
@@ -39,15 +40,17 @@ md"""Introduction
 
 # ╔═╡ 7f303256-ef8d-46e1-b21b-f02d9a4ec0fb
 md"""
-This Julia (Pluto) notebook is designed to provide an assessment of the load-deflection response of a pile head under static load. The assessment depends on the pile type and the results of a single cone penetrometer test (CPT) conducted to at least the design toe level of the pile.\
+This Julia (Pluto) notebook is designed to provide an assessment of the load-deflection response of a pile head under static vertical load. The assessment depends on the pile type and the results of a single cone penetrometer test (CPT) conducted to at least the design toe level of the pile.\
 \
-The assessment of ultimate pile shaft and base capacities follows the approach outlined by Frank (2017). The assessment of the non linear load-deflection response of the pile head under static load is based on the assessment of an initial pile head stiffness following the approach of Randolph and Wroth (1978) which is then factored for increasing loads according to the equation proposed by Mayne (2001).\
+The assessment of ultimate pile shaft and base capacities follows the approach outlined by Frank (2017). The assessment of the non linear load-deflection response is based on the assessment of an initial pile head stiffness following the approach of Randolph and Wroth (1978), which is factored for increasing loads following the equation proposed by Mayne (2001).\
 \
 The interpretation of soil behaviour type (``I_{c}``) and shear wave velocity (``V_{s}``) from the CPT data follow the correlations provided by Robertson and Cabal (2022). 
 
 **References**
 
 Frank, R. (2017). Some aspects of research and practice for pile design in France. Innov. Infrastruct. Solutions. 2 (32) 1 - 15.\
+\
+Fahey, M. and Carter, J. P. (1993). A finite element study of the pressuremeter in sand using a nonlinear elastic plastic model. Can. Geot. Jnl. 30(2): 348 - 362.\
 \
 Randolph, M. F. and Wroth, C. P. (1978). Analysis of deformation of vertically loaded piles. Jnl. Geot. Eng. Divn., ASCE, 108 (GT12): 1465 - 1488.\
 \
@@ -65,7 +68,7 @@ md"""Pile test details
 !!! warning
 	Please update this section with details of the pile load test and site. The information below is for example only.
 
-A pile load test will be carried out at Mobile, Alabama. The test comprises a 457 mm diameter, 9.5 mm wall, closed-toe, steel-pipe pile to be driven to 17.0 m below ground and grouted after driving. The pile will stick up to approximately 0.9 m above ground.\
+A pile load test will be carried out at Mobile, Alabama. The test comprises a 457 mm diameter, 9.5 mm wall, closed-toe, steel-pipe pile to be driven to 17.0 m below ground and grouted after driving. The pile will stick up approximately 0.9 m above ground.\
 \
 **Site conditions**\
 \
@@ -81,7 +84,7 @@ Assign properites to the soil and pile variables."""
 
 # ╔═╡ 7b404570-cebd-44af-8b87-7179cc2fb1f3
 md"""
-**Soil properties** (assumed constant throughout the profile)
+**Soil properties** (assumed constant throughout the profile).
 """
 
 # ╔═╡ d632faf0-75ee-489b-81b4-9b8575a083e2
@@ -108,7 +111,7 @@ md"""
 # ╔═╡ 1b9997e7-a282-453d-b5a7-a4705bc4ad84
 md"""
 **Allowable pile head settlement (m)**\
-The pile capacity will be the load at which this settlement value is reached.
+(The pile capacity will be the load at which the allowable settlement is reached)
 """
 
 # ╔═╡ 8f3d0cc8-6466-43dd-82c8-4d09348e7fc5
@@ -154,23 +157,23 @@ md"""
 md"""
 Read CPT data file and assign keys to variables
 -------------
-In this section we read the CPT data file. The file must be a delimited text file such as a .csv\
+In this section we read the CPT data file. The file must be a delimited text file such as a .csv.\
 \
-It is important that the variables `qc_col`, `depth_col`, `fs_col` and `u2_col` are assigned to the correct keys read from the input file.\
+It is important that the variables `qc_col`, `depth_col`, `fs_col` and `u2_col` are assigned to the relevant column names (denoted as 'keys') from the input file.\
 \
-The CPT data must include ``q_{c}``, ``f_{s}`` and ``u_{2}`` data. Note that a similar assessment could be completed with just ``q_{c}`` data and knowledge of the soil type. See Frank (2017) for further information.\
+The CPT data must include ``q_{c}``, ``f_{s}`` and ``u_{2}`` data. Note, however, that a similar assessment could be completed with just ``q_{c}`` data and knowledge of the soil type. See Frank (2017) for further information.\
 \
 
 """
 
 # ╔═╡ 46790341-9cae-455b-b0b1-231c10f5c6e1
-md"Read the column headers from the input file"
+md"View the column headers from the input file."
 
 # ╔═╡ 7e38b7c1-5325-4c94-96c8-b06a2fc2c561
-md"""**Assign keys to variables** - be careful not to confuse `u` with `u2`"""
+md"""**Assign keys to variables** - be careful not to confuse `u` with `u2`."""
 
 # ╔═╡ ec1769aa-2424-4aed-8696-e157fab03673
-md"""Review that the following assignments match the input file column names"""
+md"""Review that the following assignments match the input file column names. If not, adjust the indices in the cell above as required."""
 
 # ╔═╡ a3337224-351b-4776-9226-36ece5318f56
 md"""
@@ -185,13 +188,17 @@ md"""Smooth the CPT data
 
 # ╔═╡ 811a0b94-aaf9-4467-89e1-2723651dfa1c
 md"""
-In this section, the user specifies parameters to coarsen and smooth the CPT data. The parameters required are:
- - `num_steps_along_pile`: The number of desired nodes along the pile
- - `knots`: A smoothing parameter where a lower value results in more smoothing
+In this section, the user specifies parameters to assign the number of nodes along the pile, and to smooth the CPT data for analysis. The parameters required are:
+ - `num_steps_along_pile`: The number of desired nodes along the pile.
+ - `knots`: A smoothing parameter where a lower value results in more smoothing.
 """
 
 # ╔═╡ 29115972-de54-48b7-b91e-3b747f249f4a
-md"""**Smooth the data** using a B-Spline approximation (see [DataInterpolations.jl](https://docs.sciml.ai/DataInterpolations/stable/) for details)"""
+md"""**Smooth the data** using a B-Spline approximation\
+ $(nbsp) (see [DataInterpolations.jl](https://docs.sciml.ai/DataInterpolations/stable/) for further details)"""
+
+# ╔═╡ e159c66d-36c2-409a-b287-f07e381f8c6a
+md"**Parameters** to adjust the smoothing and coarseness of the data for analysis"
 
 # ╔═╡ 171bdb61-6e79-408a-8835-1706a415e688
 knots = 35; num_steps_along_pile = 120;
@@ -203,10 +210,10 @@ md"""
 """
 
 # ╔═╡ 12a5793a-30de-4f49-a95a-81bb0e4f48a3
-md"**Create a new depth grid** based on the input `num_steps_along_pile`"
+md"**Create a new depth grid** based on the input `num_steps_along_pile`."
 
 # ╔═╡ d1024dbc-436e-44ed-96cc-1e030547575c
-md""" Use the coarse grid and smoothed values for the interpretation."""
+md""" Use the new grid and smoothed values for the interpretation."""
 
 # ╔═╡ 657fddfd-530f-4af3-ae17-202ec4ede521
 md"""
@@ -240,13 +247,13 @@ The shear wave velocity is given by:\
 # ╔═╡ 93606b0b-7294-424a-8edc-3e7901fae6fd
 md"""
 #### Get E₀
-The small strain elastic modulus is given by\
+The small strain elastic modulus is given by:\
 
-- ``E_{0}\small{(MPa)} = 2 (1 + ν)\cdot \frac{\gamma}{9.81}\cdot V_{s}^{2}\cdot 0.001``, $(nbsp) where ``\gamma`` is the unit weight of soil
+- ``E_{0}\small{(MPa)} = 2 (1 + ν)\cdot \frac{\gamma}{9.81}\cdot V_{s}^{2}\cdot 0.001``, $(nbsp) where ``\gamma`` is the unit weight of soil in kN/m³
 """
 
 # ╔═╡ f5546bf5-78e7-413e-b9f3-9bb6005438b6
-md"""**Create a linear least squares** fit to ``E_{0}``"""
+md"""**Create a linear least squares** fit to ``E_{0}``."""
 
 # ╔═╡ f32428f3-b5c7-430f-bb2b-f9be098fcf53
 md"""Plot CPT data
@@ -260,13 +267,13 @@ The smoothed data used in the assessment is shown as a black line and the raw da
 """
 
 # ╔═╡ 3de17617-19d6-4550-8b4b-7bd2d38e3aee
-md"""Plot assessed Ic, Vs and E₀ 
+md"""Plot assessed ``I_{c}``, ``V_{s}`` and ``E_{0}`` 
 --------------------------------
 """
 
 # ╔═╡ a1795fc2-61b1-4ccc-a39a-f3a18a5b38dd
 md"""
- - In the ``I_{c}`` plot, the soil types used in the pile assessment is shown in blue, where 1, 2 and 3 represent silts-clays, intermediate soils and sands, respectively.\
+ - In the ``I_{c}`` plot, the soil types used in the pile assessment are shown in blue, where 1, 2 and 3 represent silts-clays, intermediate soils and sands, respectively.\
  - In the ``E_{0}`` chart, a linear least squares fit is shown as a dashed line.
 """
 
@@ -283,15 +290,15 @@ md"""--------------"""
 **Soil types**
 \
 	\
-The calculation of pile ultimate resistance following the appoach of Frank (2017) relies on several factors which require a soil type.
-Using the assessed ``I_{c}`` value, the soil types required for assessment of pile shaft and base capacity factors are defined in this notebook as follows:\
+The calculation of pile ultimate resistance, following the appoach of Frank (2017), relies on several factors which require a soil type.
+Using the assessed ``I_{c}`` value, the soil types required for the assessment are defined in this notebook as follows:\
 \
-$nbsp4 ``I_{c} > 2.60`` $nbsp4 $nbsp4 $nbsp Silt and clay (soil type 1)\
-$nbsp4 ``2.05 < I_{c} \leq 2.60`` $nbsp Intermediate soil (soil type 2)\
-$nbsp4 ``I_{c} \leq 2.05`` $nbsp4 $nbsp4 $nbsp Sand (soil type 3)
+$nbsp4 ``I_{c} > 2.60`` : Silt and clay (soil type 1).\
+$nbsp4 ``2.05 < I_{c} \leq 2.60`` : Intermediate soil (soil type 2).\
+$nbsp4 ``I_{c} \leq 2.05`` : Sand (soil type 3).
 \
 	\
-The assessed soil types are shown on the ``I_{c}`` chart above.
+The assessed soil types are shown on the chart for ``I_{c}`` above.
 """
 
 # ╔═╡ 3cb2c6ba-a463-4e58-9d3b-3d8577363784
@@ -307,6 +314,9 @@ md"""
 ### Ultimate base resistance
 """
 
+# ╔═╡ 35138641-da56-41d2-a266-3e0de45a832d
+md"The ultimate capacity is then the sum of the ultimate shaft and base capacities."
+
 # ╔═╡ b518a716-062b-4e91-bff8-cbd51e09be1d
 md"""-----------------"""
 
@@ -315,15 +325,18 @@ md"""Pile load-displacement response
 ---------------------------------
 """
 
+# ╔═╡ efe4f0cc-b42b-4898-9103-0ca91747d1c8
+md"""
+The load displacement curve is then derived following a method proposed by Mayne (2001), based on work by Fahey and Carter (1993), which assumes that the pile head stiffness varies as a function of the load ratio ``P/P_{ult}``:\
+\
+ $(nbsp4)``k = k_{0} \cdot (1 - (P/P_{ult})^{0.3})``
+\
+\
+"""
+
 # ╔═╡ fe095cea-69a2-46a1-823c-dc1bb7613469
 md"""
 ### Pile load displacement curve
-"""
-
-# ╔═╡ 9beb884f-2f8e-499f-97af-afb8860a9c79
-md"""
-!!! note 
-	**Coming soon:** Table of load vs displacement
 """
 
 # ╔═╡ fef5eba2-7457-4bdf-a889-3650ba38335f
@@ -342,6 +355,9 @@ md"""Calculate the load (MN) carried by the shaft below a given depth"""
 
 # ╔═╡ 6c5bdbe9-3253-4f6e-87aa-d62ba21016d2
 md"""### Load distribution along pile shaft at capacity"""
+
+# ╔═╡ 717159ea-ae54-4ddc-be21-1e189c8f0099
+
 
 # ╔═╡ 4e9ef2a1-e2a0-4209-8eb5-6212fb4fdb5f
 md"""---------------------
@@ -368,6 +384,28 @@ md"Plot configuration for Ic, Vs and E₀"
 md"""## Appendix 2: Functions
 """
 
+# ╔═╡ e79dd3ba-cdf5-423f-a74e-7be61dec855c
+
+
+# ╔═╡ e3e6d0ab-a3d8-4151-844f-5472a590368f
+"""
+	show_table(columns::AbstractArray, header::AbstractVector{String}; num_rows::Int64 = 5, formatters = ft_printf("%5.3f"))
+
+	Show a formatted table in HTML with given column data and headers 
+
+`columns` = `[col1data, col2data, ..]` a list of vectors with the data for each column\n
+`header` = `["col1 name", "col2 name", ...]` a list of strings with the column names
+
+
+"""
+function show_table(columns::AbstractArray, header::AbstractVector{String}; num_rows::Int64 = 5, formatters = ft_printf("%5.3f"))
+	tabledata = stack(columns)
+	n_total = length(tabledata[:,1])
+	indices = Int64.(1.0:floor(n_total/(num_rows - 1)):n_total + 1)
+	indices[end] = min.(n_total, indices[end])
+	return pretty_table(HTML, tabledata[indices,:], formatters = formatters, header = header)
+end
+
 # ╔═╡ a8e9e335-d8b9-4bd9-a35d-b46774fbb591
 # displacement = get_pile_head_displacement(k0, pile_head_loads, pile_ult_resistance)
 
@@ -376,7 +414,7 @@ md"""## Appendix 2: Functions
 	get_pile_head_displacement(k0::Float64, pile_head_loads::AbstractVector{Float64}, pile_ult_resistance::Float64)\n
 	Returns the pile head displacement for the given load vector
 
-The assumption is that the pile head stiffness k for a given load P can be approximated as ``k = k_{0} * (1 - (P/P_{ult})^{0.3})``.\n
+The assumption is that the pile head stiffness k for a given load P can be approximated as ``k = k_{0}(1 - (P/P_{ult})^{0.3})``.\n
 For further details see:\n
  - Mayne, P. W. (2001) Stress-strain-strength flow parameters from enhanced in-situ tests.\n 
  - Fahey, M. and Carter, J. P. (1993) A finite element study of the pressuremeter in sand using a nonlinear elastic plastic model.
@@ -580,9 +618,9 @@ kc = get_kc_base_CPT2012()[pile_type] #kc for [silt and clay, intermediate, sand
 
 # ╔═╡ 741eb051-a7cc-456a-b992-044d0acd460a
 md""" 
-**Pile type:** $(pile_type)\
-**Pile diameter:** $(pile_diameter) m\
-**Pile toe depth:** $(pile_toe_depth) m\
+**Pile type:** $(pile_type).\
+**Pile diameter:** $(pile_diameter) m.\
+**Pile toe depth:** $(pile_toe_depth) m.\
 """
 
 # ╔═╡ 9c3698a6-2293-419c-82c2-8e82dda16683
@@ -843,10 +881,8 @@ begin
 	u2_MPa = 0.001 * fun_u2(new_depth);
 end;
 
-# ╔═╡ e159c66d-36c2-409a-b287-f07e381f8c6a
-md"**Parameters** to adjust the smoothing and coarseness of the data for analysis\
- $(nbsp4)(The adopted `num_steps_along_pile` results in a spacing of $(round(depth_m[2] - depth_m[1], digits=2)) m between nodes).
-"
+# ╔═╡ c166a7d0-39b8-4f03-bab7-984722cdfda2
+md"The adopted `num_steps_along_pile` results in a spacing of $(round(depth_m[2] - depth_m[1], digits=2)) m between nodes"
 
 # ╔═╡ 234d9744-0550-4485-82d1-b6a74ba6f1be
 qc_avg_base = get_average_qc_at_pile_base(depth_m, qc_MPa, pile_toe_depth, pile_diameter, scale_to_30pct = false)
@@ -904,14 +940,14 @@ soil_type_CPT2012 = get_soil_type_CPT2012(Ic)
 kc_at_base = kc[soil_type_CPT2012[depth_m .== pile_toe_depth]][1]
 
 # ╔═╡ a25c7e59-ffed-4528-b959-468ee8067277
-fb = kc_at_base * qc_avg_base
+fb_MPa = kc_at_base * qc_avg_base
 
 # ╔═╡ d50e9d4c-2962-4735-bea8-4bd20d120f32
-ult_base_MN = round(pi * pile_diameter ^2 / 4 * fb, digits = 3)
+ult_base_MN = round(pi * pile_diameter ^2 / 4 * fb_MPa, digits = 3)
 
 # ╔═╡ a30fb07b-ec4a-4e41-be61-70718894516a
 md"""
-The ultimate base resistance, **``f_{b}`` = $(ult_base_MN) MN**, was obtained as follows:\
+The ultimate base resistance, **``f_{b}`` = $(ult_base_MN) MN**, is obtained as follows:\
 
  
  $nbsp $nbsp``f_{b} = k_{c}\cdot q_{ca}`` $nbsp where:\
@@ -924,10 +960,10 @@ $nbsp $nbsp $nbsp $nbsp``q_{ca}`` is the equavalent average cone resistance at t
 """
 
 # ╔═╡ d8c6bcc9-355d-46ca-b13a-e130e8895ede
-fshaft = get_ultimate_shaft_resistance(qc_MPa, Ic, pile_type, factor = 1.0)
+fshaft_MPa = get_ultimate_shaft_resistance(qc_MPa, Ic, pile_type, factor = 1.0)
 
 # ╔═╡ e4f3b3bb-f913-400f-b0e0-bcb2cba01d09
-ult_shaft_MN = round(pi * pile_diameter * mean(fshaft[depth_m .<= pile_toe_depth .&& depth_m .> 0.0]) * pile_toe_depth, digits = 3)
+ult_shaft_MN = round(pi * pile_diameter * mean(fshaft_MPa[depth_m .<= pile_toe_depth .&& depth_m .> 0.0]) * pile_toe_depth, digits = 3)
 
 # ╔═╡ 433be51b-8738-42d2-92c0-0f62344aab3f
 md"""
@@ -935,9 +971,9 @@ The ultimate shaft resistance, **``f_{s}`` = $(ult_shaft_MN) MN**, is obtained a
 \
  $nbsp $nbsp``f_{s} = \alpha\cdot f_{sol}`` $nbsp $nbsp $nbsp $nbsp with ``f_{sol} \leq f_{smax}`` $nbsp where:\
 
-- ``f_{sol}`` is the unfactored shaft resistance dependent on ``q_{c}``and soil type.
-- ``\alpha`` is a factor dependent on soil and pile type.\
-- ``f_{smax}`` is a the limiting shaft resistance dependent on soil and pile type.
+- ``f_{sol}`` is the unfactored shaft resistance dependent on ``q_{c}`` and soil type.
+- ``\alpha`` is a factor dependent on soil type and pile type.\
+- ``f_{smax}`` is a the limiting shaft resistance dependent on soil type and pile type.
 """
 
 # ╔═╡ f40fc671-1cd6-4b31-a1b3-a5da433f8805
@@ -945,15 +981,15 @@ pile_ult_resistance = round(ult_shaft_MN + ult_base_MN, digits = 3);
 
 # ╔═╡ b4291248-c6f6-49ae-b702-b64169a96b3a
 md"""
-The ulitimate resistance of the pile is assessed to be **$(pile_ult_resistance) MN**, comprising:
+The ulitimate resistance of the pile is **$(pile_ult_resistance) MN**, comprising:
 
- * Ultimate shaft resistance of $(ult_shaft_MN) MN
- * Ultimate base resistance of $(ult_base_MN) MN
+ * Ultimate shaft resistance of $(ult_shaft_MN) MN.
+ * Ultimate base resistance of $(ult_base_MN) MN.
 The sections below provide details on the caculation.
 """
 
 # ╔═╡ e5af32ab-6eb3-46d5-8a13-6d6efb8c8e9d
-pile_head_loads = 0.01:0.001:0.90*pile_ult_resistance; #use tiny load step of 0.001
+pile_head_loads = 0.01:0.01:0.90*pile_ult_resistance; #use small load step of 0.01
 
 # ╔═╡ 9efc1e45-da4a-4ec4-a324-d4ba409d82d9
 """
@@ -994,7 +1030,7 @@ E_Lon2 = fun_E0_linear(pile_toe_depth / 2);
 
 # ╔═╡ 7d5bfca5-5ebd-4e5a-8d7f-0e9c1684a922
 md"""
-The small strain elastic modulus along the pile shaft is assumed to vary linearly, allowing us to calculate:\
+The small strain elastic modulus along the pile shaft is assumed to vary linearly, and a least squares approximation gives:\
 \
  $(nbsp4)``E_{L}``: ( $(round(E_L,digits = 0)) MN ) The small strain elastic modulus at the base of the shaft.\
 $(nbsp4)``E_{L/2}``: ( $(round(E_Lon2,digits = 0)) MN ) The small strain elastic modulus at the midpoint of the shaft.\
@@ -1004,9 +1040,9 @@ $(nbsp4)``E_{L/2}``: ( $(round(E_Lon2,digits = 0)) MN ) The small strain elastic
 k0 = get_initial_pile_head_stiffness(pile_toe_depth, pile_diameter, Epile_MPa, E_L, E_Lon2, ν = Poisson_ratio);
 
 # ╔═╡ 64013deb-af90-465d-a8f5-581e0f6baab6
-md"""An estimate the initial pile head stiffness ``k_{0}`` was obtained following the closed form elastic solution by Randolph and Wroth (1978) as:\
+md"""The initial pile head stiffness, ``k_{0}``, taking account of pile compressibility, is computed following the closed form elastic solution by Randolph and Wroth (1978) as:\
 \
- $(nbsp4)``k_{0}``: ( $(round(k0,digits = 0)) MN ) The initial pile head stiffness.\
+ $(nbsp4)``k_{0}``: ( $(round(k0,digits = 0)) MN/m ) The initial pile head stiffness.\
 """
 
 # ╔═╡ 4f9e4011-e02e-4fb7-a76f-d4ac0ca3ad43
@@ -1021,14 +1057,16 @@ md"""Pile design capacity
 \
 The pile design capacity is **$(pile_capacity_MN) MN**.\
 \
-This is the load at which the (user defined) allowable pile head settlement of $(allowable_pile_head_settlement_m) m is reached. To adjust this value, edit the `allowable_pile_head_settlement_m` variable in the pile properties section above.
+This is the load at which the (user defined) allowable pile head settlement of $(allowable_pile_head_settlement_m) m is reached.
+
+The `allowable_pile_head_settlement_m` variable can be adjusted in the pile properties section above.
 """
 
 # ╔═╡ 723a758c-941e-450f-ac2c-60b6a7e140db
 capacity_factor = round(pile_capacity_MN / pile_ult_resistance, digits = 3);
 
 # ╔═╡ c58cb696-e3f6-441d-81f1-5e4915db081d
-md""" The pile capacity is $(round(100 * capacity_factor, digits = 0)) % of ultimate load."""
+md""" The pile capacity is assessed to be $(round(100 * capacity_factor, digits = 0)) % of the ultimate load."""
 
 # ╔═╡ 97e12fce-2e96-49fd-8476-0ea178de8c97
 fshaft_factored = get_ultimate_shaft_resistance(qc_MPa, Ic, pile_type, factor = capacity_factor);
@@ -1057,6 +1095,9 @@ begin
 	figShaftLoad
 end
 
+# ╔═╡ 789627e2-0e67-4692-b750-a155b9f16790
+show_table([-mydepth, myshaftload],["Elevation (m)", "Load (MN)"], num_rows=15, formatters = ft_printf("%5.3f"))
+
 # ╔═╡ f2a332dd-c5fa-4a89-a2d7-89818f3f23b3
 md"""
 The load carried by the pile at capacity is $(pile_capacity_MN) MN, comprising:\
@@ -1065,13 +1106,25 @@ The load carried by the pile at capacity is $(pile_capacity_MN) MN, comprising:\
  -  $(round(total_base_MN_at_capacity, digits = 3)) MN carried by the base
 """
 
+# ╔═╡ 4e9ccc3b-e977-4f15-b0c5-7c5daca84901
+begin
+	indices = pile_head_loads .< pile_capacity_MN
+	show_table(
+		[pile_head_loads[indices], displacement[indices]],
+		["Load (MN)", "Displacement (m)"],
+		num_rows = 15,
+		formatters = ft_printf("%5.3f")
+	)
+end
+
+
 # ╔═╡ c46f48bb-e03b-4b90-95cb-513039d5416f
 begin
 	plot_indicies = pile_head_loads .< pile_capacity_MN
 	figDisp = Figure(size = (600,400))
 	Axis(figDisp[1,1], xticks = (0:0.01:0.2), yticks = (0:0.5:pile_capacity_MN), xlabel = "Displacement (m)", ylabel = "Pile head load (MN)")
 	lines!(figDisp[1,1], displacement[plot_indicies], pile_head_loads[plot_indicies])
-end
+end;
 
 # ╔═╡ 8f9a73f7-d3ab-4f05-b5cc-7daeab7afd66
 figDisp
@@ -1132,6 +1185,7 @@ DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
@@ -1140,6 +1194,7 @@ DataInterpolations = "~6.6.0"
 DelimitedFiles = "~1.9.1"
 LsqFit = "~0.15.0"
 PlutoUI = "~0.7.60"
+PrettyTables = "~2.4.0"
 Statistics = "~1.11.1"
 """
 
@@ -1149,7 +1204,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.2"
 manifest_format = "2.0"
-project_hash = "022aecf88192e1d0ee2677cf8db87c9f4ef41223"
+project_hash = "dbeb52134304a33ac630c63fd0b217a563da522f"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2864,7 +2919,7 @@ version = "3.6.0+0"
 # ╟─a184c4eb-cb0e-4a99-8568-9b796ad0ab57
 # ╠═2c47f0aa-22ea-4723-8c85-cadba3443472
 # ╟─b8e09659-51fa-4a1c-bf28-011944937c7f
-# ╟─805713cf-e4fa-44cd-b694-5ebe05d7637f
+# ╠═805713cf-e4fa-44cd-b694-5ebe05d7637f
 # ╠═acb1bb78-6ff9-4b9a-85bd-b56c726635a1
 # ╟─46790341-9cae-455b-b0b1-231c10f5c6e1
 # ╠═a8117f4a-a2fb-4a5f-bce2-0f88819a22a8
@@ -2874,11 +2929,12 @@ version = "3.6.0+0"
 # ╠═779a21a3-82b0-4d22-95dd-d1f896b3a272
 # ╟─a3337224-351b-4776-9226-36ece5318f56
 # ╟─ece64ce0-f597-4846-87d5-4146b7277260
-# ╟─811a0b94-aaf9-4467-89e1-2723651dfa1c
+# ╠═811a0b94-aaf9-4467-89e1-2723651dfa1c
 # ╟─29115972-de54-48b7-b91e-3b747f249f4a
 # ╠═679e440d-2e39-4cb7-a1c9-9c9ceeac9f6d
 # ╟─e159c66d-36c2-409a-b287-f07e381f8c6a
 # ╠═171bdb61-6e79-408a-8835-1706a415e688
+# ╟─c166a7d0-39b8-4f03-bab7-984722cdfda2
 # ╟─d6178e74-b9cb-4587-bc58-6bc1f42f9e2e
 # ╟─12a5793a-30de-4f49-a95a-81bb0e4f48a3
 # ╠═3d0b9618-f5ba-4b2e-a559-f5862d05b485
@@ -2918,13 +2974,15 @@ version = "3.6.0+0"
 # ╠═673a87a4-569d-4c33-ae3e-98debc89df73
 # ╠═a25c7e59-ffed-4528-b959-468ee8067277
 # ╠═d50e9d4c-2962-4735-bea8-4bd20d120f32
+# ╟─35138641-da56-41d2-a266-3e0de45a832d
 # ╠═f40fc671-1cd6-4b31-a1b3-a5da433f8805
 # ╟─03e1dd77-669d-46b2-bff0-8e23fef7cf39
 # ╠═dc029c10-1afb-4401-85c9-732aa7962510
 # ╟─b518a716-062b-4e91-bff8-cbd51e09be1d
 # ╟─15715b84-c935-4903-ae55-dc115c530dab
-# ╟─64013deb-af90-465d-a8f5-581e0f6baab6
 # ╟─7d5bfca5-5ebd-4e5a-8d7f-0e9c1684a922
+# ╟─64013deb-af90-465d-a8f5-581e0f6baab6
+# ╟─efe4f0cc-b42b-4898-9103-0ca91747d1c8
 # ╠═0b104fff-80fe-43e9-be05-99521aeb0535
 # ╠═d57d9ea9-1ed4-4f46-bcc5-d498e5a0ac00
 # ╠═6c21fe16-9858-424a-9a4c-890c452e6514
@@ -2932,9 +2990,9 @@ version = "3.6.0+0"
 # ╠═4f9e4011-e02e-4fb7-a76f-d4ac0ca3ad43
 # ╟─fe095cea-69a2-46a1-823c-dc1bb7613469
 # ╟─741eb051-a7cc-456a-b992-044d0acd460a
-# ╠═8f9a73f7-d3ab-4f05-b5cc-7daeab7afd66
+# ╟─8f9a73f7-d3ab-4f05-b5cc-7daeab7afd66
+# ╠═4e9ccc3b-e977-4f15-b0c5-7c5daca84901
 # ╟─c46f48bb-e03b-4b90-95cb-513039d5416f
-# ╟─9beb884f-2f8e-499f-97af-afb8860a9c79
 # ╟─fef5eba2-7457-4bdf-a889-3650ba38335f
 # ╟─c58cb696-e3f6-441d-81f1-5e4915db081d
 # ╠═723a758c-941e-450f-ac2c-60b6a7e140db
@@ -2946,7 +3004,9 @@ version = "3.6.0+0"
 # ╠═bb86eff9-f3ea-4ade-ae3c-5feeac9d8e34
 # ╟─6c5bdbe9-3253-4f6e-87aa-d62ba21016d2
 # ╟─f2a332dd-c5fa-4a89-a2d7-89818f3f23b3
-# ╠═b1b1c43f-cc35-4c18-a4ff-5ea0fb8996e6
+# ╟─b1b1c43f-cc35-4c18-a4ff-5ea0fb8996e6
+# ╠═789627e2-0e67-4692-b750-a155b9f16790
+# ╠═717159ea-ae54-4ddc-be21-1e189c8f0099
 # ╟─4e9ef2a1-e2a0-4209-8eb5-6212fb4fdb5f
 # ╟─c0be21b4-a70a-4dc5-b2b9-dba8ff243a99
 # ╟─dc5cb03e-2fda-4f0c-a580-0deada74707d
@@ -2956,6 +3016,8 @@ version = "3.6.0+0"
 # ╟─53ef7ea8-93f5-466d-a7ae-66819ac8c1dc
 # ╠═aa4bfc30-6e61-48b9-805e-7d7088946de7
 # ╟─688d3ba7-5e44-460c-960a-d5274ab3bf7a
+# ╠═e79dd3ba-cdf5-423f-a74e-7be61dec855c
+# ╟─e3e6d0ab-a3d8-4151-844f-5472a590368f
 # ╠═a8e9e335-d8b9-4bd9-a35d-b46774fbb591
 # ╟─1eeb958f-6b75-4ae6-97f1-e6e63f705fac
 # ╠═79256d96-3d30-4ca6-87fc-c29d8217bf68
@@ -2994,6 +3056,6 @@ version = "3.6.0+0"
 # ╠═f2c80b33-9646-4bee-8c15-12382a2c945c
 # ╟─acdbf8f9-7c7e-4e2c-86bd-5ba7b301a5ee
 # ╠═febeea9a-5459-44b9-b9a2-d6d976f6b016
-# ╟─d59bee90-58d4-444a-903b-9716efcf4d8a
+# ╠═d59bee90-58d4-444a-903b-9716efcf4d8a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
