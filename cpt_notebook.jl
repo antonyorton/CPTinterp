@@ -42,9 +42,9 @@ md"""Introduction
 md"""
 This Julia (Pluto) notebook is designed to provide an assessment of the load-deflection response of a pile head under static vertical load. The assessment depends on the pile type and the results of a single cone penetrometer test (CPT) conducted to at least the design toe level of the pile.\
 \
-The assessment of ultimate pile shaft and base capacities follows the approach outlined by Frank (2017). The assessment of the non linear load-deflection response is based on the assessment of an initial pile head stiffness following the approach of Randolph and Wroth (1978), which is factored for increasing loads following the equation proposed by Mayne (2001).\
+The assessment of ultimate pile shaft and base capacities follows the approach outlined by Frank (2017). The assessment of the non linear load-deflection response is based on the initial pile head stiffness estimated by the Randolph and Wroth (1978) formula. The pile head stiffness is then factored down for increasing loads following the equation proposed by Mayne (2001).\
 \
-The interpretation of soil behaviour type (``I_{c}``) and shear wave velocity (``V_{s}``) from the CPT data follow the correlations provided by Robertson and Cabal (2022). 
+The interpretation of soil behaviour type (``I_{c}``) and shear wave velocity (``V_{s}``) from the CPT data follow correlations provided by Robertson and Cabal (2022). 
 
 **References**
 
@@ -65,8 +65,8 @@ Robertson, P. K. and Cabal, K. (2022). Guide to cone penetration testing. 7th Ed
 md"""Pile test details
 --------
 
-!!! warning
-	Please update this section with details of the pile load test and site. The information below is for example only.
+!!! note
+	This section contains details of the pile load test.
 
 A pile load test will be carried out at Mobile, Alabama. The test comprises a 457 mm diameter, 9.5 mm wall, closed-toe, steel-pipe pile to be driven to 17.0 m below ground and grouted after driving. The pile will stick up approximately 0.9 m above ground.\
 \
@@ -102,12 +102,6 @@ Poisson_ratio = 0.3;
 # ╔═╡ 8a3d5f67-4e4f-4c33-904c-5bde4a9cc3ef
 md"**Pile type**"
 
-# ╔═╡ a249e97c-9d58-4339-9a89-0c2f05daba50
-md"""
-!!! warning
-    When the browser is refreshed, it may be necessary to re-enter the pile type.
-"""
-
 # ╔═╡ 1b9997e7-a282-453d-b5a7-a4705bc4ad84
 md"""
 **Allowable pile head settlement (m)**\
@@ -126,13 +120,31 @@ md"""
 md"Pile toe depth (meters below ground)"
 
 # ╔═╡ db43b118-16b9-4d66-be86-a129fc286107
-pile_toe_depth = 45.0;
+pile_toe_depth = 17.0;
 
 # ╔═╡ 8435f38b-91a6-47e1-b596-2296e16070f0
 md"Pile diameter (metres)"
 
 # ╔═╡ 88c706e2-7e38-4f3f-a257-16d522f964e7
-pile_diameter = 0.61;
+pile_diameter = 0.457;
+
+# ╔═╡ 13a9ad72-1687-4b6c-998e-035be8e93918
+md"""Estimation of ``E_{pile}``"""
+
+# ╔═╡ eb7b6073-d5b3-4bde-b390-5cc76b7d2cff
+begin
+	# Calculation of Epile assuming a steel shell, grout filled pile
+	odiam = 0.457
+	idiam = 0.457 - 0.0095
+	Aouter = pi * odiam ^ 2 / 4
+	Ainner = pi * idiam ^ 2 / 4
+	Eouter = 200 # Gpa
+	Einner = 20  # GPa
+	Epile = ((Aouter - Ainner) * Eouter + Ainner * Einner )/ Aouter
+end
+
+# ╔═╡ d054f124-0e73-40d1-b7af-a0bbab49abb8
+pi
 
 # ╔═╡ 7e9b0f08-1304-47f6-b981-9a4c001df324
 md"Pile Young's modulus (MPa)"
@@ -147,11 +159,7 @@ md"**Groundwater level**"
 md"Depth to groundwater (metres below ground)"
 
 # ╔═╡ 2c47f0aa-22ea-4723-8c85-cadba3443472
-gw_depth = 0.0;
-
-# ╔═╡ b8e09659-51fa-4a1c-bf28-011944937c7f
-md"""
-"""
+gw_depth = 3.0;
 
 # ╔═╡ 805713cf-e4fa-44cd-b694-5ebe05d7637f
 md"""
@@ -159,7 +167,7 @@ Read CPT data file and assign keys to variables
 -------------
 In this section we read the CPT data file. The file must be a delimited text file such as a .csv.\
 \
-It is important that the variables `qc_col`, `depth_col`, `fs_col` and `u2_col` are assigned to the relevant column names (denoted as 'keys') from the input file.\
+Once the file is read into the notebook, it is important that the variables `qc_col`, `depth_col`, `fs_col` and `u2_col` are assigned to the relevant column names (denoted as 'keys') from the input file.\
 \
 The CPT data must include ``q_{c}``, ``f_{s}`` and ``u_{2}`` data. Note, however, that a similar assessment could be completed with just ``q_{c}`` data and knowledge of the soil type. See Frank (2017) for further information.\
 \
@@ -201,7 +209,7 @@ md"""**Smooth the data** using a B-Spline approximation\
 md"**Parameters** to adjust the smoothing and coarseness of the data for analysis"
 
 # ╔═╡ 171bdb61-6e79-408a-8835-1706a415e688
-knots = 35; num_steps_along_pile = 120;
+knots = 45; num_steps_along_pile = 120;
 
 # ╔═╡ d6178e74-b9cb-4587-bc58-6bc1f42f9e2e
 md"""
@@ -214,11 +222,6 @@ md"**Create a new depth grid** based on the input `num_steps_along_pile`."
 
 # ╔═╡ d1024dbc-436e-44ed-96cc-1e030547575c
 md""" Use the new grid and smoothed values for the interpretation."""
-
-# ╔═╡ 657fddfd-530f-4af3-ae17-202ec4ede521
-md"""
-\
-"""
 
 # ╔═╡ 2c996085-e5b6-4d63-99db-6a47af2cd13b
 md"""Obtain ``I_{c}`` and ``V_{s}`` from CPT correlations
@@ -385,7 +388,7 @@ md"""## Appendix 2: Functions
 """
 
 # ╔═╡ e79dd3ba-cdf5-423f-a74e-7be61dec855c
-
+#show_table([-mydepth, myshaftload],["Elevation (m)", "Load (MN)"], num_rows=15, formatters = ft_printf("%5.3f"))
 
 # ╔═╡ e3e6d0ab-a3d8-4151-844f-5472a590368f
 """
@@ -852,7 +855,7 @@ function read_delimited_text_file(filepath::String; delim::AbstractChar=',', T::
 end
 
 # ╔═╡ acb1bb78-6ff9-4b9a-85bd-b56c726635a1
-data = read_delimited_text_file("../data/CPT-Fellenius_299.csv",delim = '\t');
+data = read_delimited_text_file("../data/CPT-B1.csv",delim = '\t'); #set delim = ',' for comma delimited text files
 
 # ╔═╡ a8117f4a-a2fb-4a5f-bce2-0f88819a22a8
 mykeys = collect(keys(data))
@@ -871,7 +874,7 @@ begin
 end;
 
 # ╔═╡ 3d0b9618-f5ba-4b2e-a559-f5862d05b485
-new_depth = collect(0.1:(pile_toe_depth - 0.1)/num_steps_along_pile:data[depth_col][end]);
+new_depth = collect(0.01:(pile_toe_depth - 0.01)/num_steps_along_pile:data[depth_col][end]);
 
 # ╔═╡ 5f5e2b35-629c-4a11-89a9-4b129894053b
 begin
@@ -989,7 +992,7 @@ The sections below provide details on the caculation.
 """
 
 # ╔═╡ e5af32ab-6eb3-46d5-8a13-6d6efb8c8e9d
-pile_head_loads = 0.01:0.01:0.90*pile_ult_resistance; #use small load step of 0.01
+pile_head_loads = 0.01:0.001:0.90*pile_ult_resistance; #use small load step of 0.01
 
 # ╔═╡ 9efc1e45-da4a-4ec4-a324-d4ba409d82d9
 """
@@ -1113,7 +1116,7 @@ begin
 		[pile_head_loads[indices], displacement[indices]],
 		["Load (MN)", "Displacement (m)"],
 		num_rows = 15,
-		formatters = ft_printf("%5.3f")
+		formatters = ft_printf("%8.6f")
 	)
 end
 
@@ -2905,7 +2908,6 @@ version = "3.6.0+0"
 # ╠═bf2c5ffc-d7d1-424d-9a4e-0f78b0ae5ebd
 # ╟─8a3d5f67-4e4f-4c33-904c-5bde4a9cc3ef
 # ╟─2a956b1c-be86-4218-a8d4-e6baafe048dd
-# ╟─a249e97c-9d58-4339-9a89-0c2f05daba50
 # ╟─1b9997e7-a282-453d-b5a7-a4705bc4ad84
 # ╠═8f3d0cc8-6466-43dd-82c8-4d09348e7fc5
 # ╟─ac1b64ea-b0cb-4d81-8aa9-214c3bd3d42f
@@ -2913,13 +2915,15 @@ version = "3.6.0+0"
 # ╠═db43b118-16b9-4d66-be86-a129fc286107
 # ╟─8435f38b-91a6-47e1-b596-2296e16070f0
 # ╠═88c706e2-7e38-4f3f-a257-16d522f964e7
+# ╟─13a9ad72-1687-4b6c-998e-035be8e93918
+# ╠═eb7b6073-d5b3-4bde-b390-5cc76b7d2cff
+# ╠═d054f124-0e73-40d1-b7af-a0bbab49abb8
 # ╟─7e9b0f08-1304-47f6-b981-9a4c001df324
 # ╠═2df2143c-0e08-4bb6-b056-d56cdd4eb21a
 # ╟─6edf2a4b-4672-437e-b8da-d0d91c9f924f
 # ╟─a184c4eb-cb0e-4a99-8568-9b796ad0ab57
 # ╠═2c47f0aa-22ea-4723-8c85-cadba3443472
-# ╟─b8e09659-51fa-4a1c-bf28-011944937c7f
-# ╠═805713cf-e4fa-44cd-b694-5ebe05d7637f
+# ╟─805713cf-e4fa-44cd-b694-5ebe05d7637f
 # ╠═acb1bb78-6ff9-4b9a-85bd-b56c726635a1
 # ╟─46790341-9cae-455b-b0b1-231c10f5c6e1
 # ╠═a8117f4a-a2fb-4a5f-bce2-0f88819a22a8
@@ -2929,7 +2933,7 @@ version = "3.6.0+0"
 # ╠═779a21a3-82b0-4d22-95dd-d1f896b3a272
 # ╟─a3337224-351b-4776-9226-36ece5318f56
 # ╟─ece64ce0-f597-4846-87d5-4146b7277260
-# ╠═811a0b94-aaf9-4467-89e1-2723651dfa1c
+# ╟─811a0b94-aaf9-4467-89e1-2723651dfa1c
 # ╟─29115972-de54-48b7-b91e-3b747f249f4a
 # ╠═679e440d-2e39-4cb7-a1c9-9c9ceeac9f6d
 # ╟─e159c66d-36c2-409a-b287-f07e381f8c6a
@@ -2940,7 +2944,6 @@ version = "3.6.0+0"
 # ╠═3d0b9618-f5ba-4b2e-a559-f5862d05b485
 # ╟─d1024dbc-436e-44ed-96cc-1e030547575c
 # ╠═5f5e2b35-629c-4a11-89a9-4b129894053b
-# ╟─657fddfd-530f-4af3-ae17-202ec4ede521
 # ╟─2c996085-e5b6-4d63-99db-6a47af2cd13b
 # ╟─3968f88c-d0ea-4b6e-aea2-407584ad917e
 # ╟─f7bb1887-3a38-4752-9ee2-769734bed772
@@ -2991,7 +2994,7 @@ version = "3.6.0+0"
 # ╟─fe095cea-69a2-46a1-823c-dc1bb7613469
 # ╟─741eb051-a7cc-456a-b992-044d0acd460a
 # ╟─8f9a73f7-d3ab-4f05-b5cc-7daeab7afd66
-# ╠═4e9ccc3b-e977-4f15-b0c5-7c5daca84901
+# ╟─4e9ccc3b-e977-4f15-b0c5-7c5daca84901
 # ╟─c46f48bb-e03b-4b90-95cb-513039d5416f
 # ╟─fef5eba2-7457-4bdf-a889-3650ba38335f
 # ╟─c58cb696-e3f6-441d-81f1-5e4915db081d
