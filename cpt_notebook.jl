@@ -387,6 +387,27 @@ md"Plot configuration for Ic, Vs and E₀"
 md"""## Appendix 2: Functions
 """
 
+# ╔═╡ 95d989c4-63a7-4ad4-afd5-76558d890ece
+
+
+# ╔═╡ 51db1dee-2dad-4f41-bc53-cd97d803fa34
+#fun_E0_linear = get_least_squares_interpolator(depth_m, E0);
+
+# ╔═╡ f4929686-6348-4451-8295-3d35008371f9
+
+"""
+	get_least_squares_interpolator(xvals::AbstractVector, yvals::AbstractVector; p0::AbstractVector = [0.0,0.0])\n
+	Returns a function `fun()` such that fun(x) = mx + b is the least squares linear approximation to [xvals, yvals]\n
+`p0 [Float64, Float64]` is the initial guess, and `[0.0, 0.0]` seems to work
+
+"""
+function get_least_squares_interpolator(xvals::AbstractVector, yvals::AbstractVector; p0::AbstractVector = [0.0,0.0])
+		linearmodel(x,p) = p[1] * x .+ p[2] # define a linear model y = mx + b,  (p = [m,b])
+		linearfit = LsqFit.curve_fit(linearmodel, xvals, yvals, p0) #least squares fit to E0
+		fun_linear(x) = linearfit.param[1] * x .+ linearfit.param[2] #linear function
+		return fun_linear
+end
+
 # ╔═╡ e79dd3ba-cdf5-423f-a74e-7be61dec855c
 #show_table([-mydepth, myshaftload],["Elevation (m)", "Load (MN)"], num_rows=15, formatters = ft_printf("%5.3f"))
 
@@ -394,9 +415,9 @@ md"""## Appendix 2: Functions
 """
 	show_table(columns::AbstractArray, header::AbstractVector{String}; num_rows::Int64 = 5, formatters = ft_printf("%5.3f"))
 
-	Show a formatted table in HTML with given column data and headers 
+	Show a formatted table in HTML with given column data and headers. 
 
-`columns` = `[col1data, col2data, ..]` a list of vectors with the data for each column\n
+`columns` = `[col1data, col2data, ..]` a list of vectors with the data for each column\\
 `header` = `["col1 name", "col2 name", ...]` a list of strings with the column names
 
 
@@ -457,7 +478,7 @@ The theory assumes that the soil has a linearly increasing elastic modulus with 
 `Epile` is the elastic modulus of the pile\n
 `Esoil_L` is the small strain (E₀) elastic modulus of the soil at the base of the pile shaft\n
 `Esoil_Lon2` is the small strain (E₀) elastic modulus of the soil at the midpoint of the pile shaft\n
-`ν` is the Poisson's ratio of the soil
+`ν` (input as \\nu[tab]) is the Poisson's ratio of the soil
 
 """
 function get_initial_pile_head_stiffness(pile_length::Float64, pile_diameter::Float64, Epile::Int64, Esoil_L::Float64, Esoil_Lon2::Float64; ν::Float64 = 0.3)
@@ -656,11 +677,11 @@ end
 
 # ╔═╡ 443b2768-4db8-4ec4-8adc-f5a18dc5cf67
 """
-	function get_ultimate_shaft_resistance(qc_MPa::AbstractVector{Float64}, Ic::AbstractVector{Float64}, pile_type::String; factor::Float64 = 1.0)
+	get_ultimate_shaft_resistance(qc_MPa::AbstractVector{Float64}, Ic::AbstractVector{Float64}, pile_type::String; factor::Float64 = 1.0)\n
 
 	Returns the shaft resistance (MPa) for each element.
 
-Set `factor` = 1.0 for ultimate resistance, and `factor` < 1.0 for resistances below the ultimate load
+Set `factor` = 1.0 for ultimate resistance, and `factor` < 1.0 for loads below the ultimate load
 """
 function get_ultimate_shaft_resistance(qc_MPa::AbstractVector{Float64}, Ic::AbstractVector{Float64}, pile_type::String; factor::Float64 = 1.0)
 	if (factor > 1.0)||(factor < 0.0)
@@ -688,9 +709,9 @@ end
 	get_average_qc_at_pile_base(depth_m::AbstractVector{Float64},qc_MPa::AbstractVector{Float64}, pile_toe_depth::Float64, pile_diameter::Float64; scale_to_30pct::Bool = false)\n
 	Returns average qc within +/- 1.5 pile diameters from the toe, with values scaled to within +/- 30% of the value at the toe
 
-if `scale_to_30pct` = `false`, values will not be scaled to +/- 30% of the value at the toe prior to averaging
+if `clip_to_30pct` = `false`, values will not be scaled to +/- 30% of the value at the toe prior to averaging
 """
-function get_average_qc_at_pile_base(depth_m::AbstractVector{Float64}, qc_MPa::AbstractVector{Float64}, pile_toe_depth::Float64, pile_diameter::Float64; scale_to_30pct::Bool = false)
+function get_average_qc_at_pile_base(depth_m::AbstractVector{Float64}, qc_MPa::AbstractVector{Float64}, pile_toe_depth::Float64, pile_diameter::Float64; clip_to_30pct::Bool = false)
 
 	# Get qc values within +/- 1.5 pile diameters from the toe
 	base_qcvals = qc_MPa[depth_m .>= pile_toe_depth - 1.5 * pile_diameter .&& depth_m .<= pile_toe_depth + 1.5 * pile_diameter]
@@ -699,9 +720,9 @@ function get_average_qc_at_pile_base(depth_m::AbstractVector{Float64}, qc_MPa::A
 	base_qc = qc_MPa[argmin(abs.(depth_m .- pile_toe_depth))]
 
 
-	# Scale base_qc values to 0.7 * qc at toe < x < 1.3 * qc at toe
-	if scale_to_30pct
-		for i in 1:length(base_qcvals)
+	# limit base_qc values to 0.7 * qc at toe < x < 1.3 * qc at toe
+	if clip_to_30pct
+		for i in 1:eachindex(base_qcvals)
 			if base_qcvals[i] > 1.3 * base_qc
 				base_qcvals[i] = 1.3 * base_qc
 			elseif base_qcvals[i] < 0.7 * base_qc
@@ -793,7 +814,7 @@ end
 
 # ╔═╡ fcabe781-c016-4079-9fef-d87419409813
 """
-	function get_qn(depth_m::AbstractVector{Float64},  qc_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}; gamma::Float64 = 18.0, a::Float64 = 0.73)\n
+	get_qn(depth_m::AbstractVector{Float64},  qc_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}; gamma::Float64 = 18.0, a::Float64 = 0.73)\n
 	returns qₙ = qt - σᵥ₀
 `a` is the net area ratio of the cone, typically between 0.70 and 0.85\n
 `gamma` is soil unit weight in kN/m², assumed constant over `depth_m`
@@ -842,16 +863,17 @@ end
 # read_delimited_text_file("../data/CPT-B1.csv", delim='\t', T=Float64)
 
 # ╔═╡ d59bee90-58d4-444a-903b-9716efcf4d8a
+
 """
     read_delimited_text_file(filepath::String; delim::AbstractChar=',', T::Type=Float64)\n
-	Returns a dictionary 'data' such that data[col1_header] = col1_values
+	Returns a dictionary `data` such that `data[col1_header] = col1_values`
 
 Read a delimited text file. Assumes the first row is the header and that all columns below the header have the same type.
 
 """
 function read_delimited_text_file(filepath::String; delim::AbstractChar=',', T::Type=Float64)
     data, headers = DelimitedFiles.readdlm(filepath, delim, T, header=true)
-    return Dict(headers[i] => data[:, i] for i = 1:length(data[1,:]))
+    return Dict(headers[i] => data[:, i] for i = 1:length(data[1, :]))
 end
 
 # ╔═╡ acb1bb78-6ff9-4b9a-85bd-b56c726635a1
@@ -888,7 +910,7 @@ end;
 md"The adopted `num_steps_along_pile` results in a spacing of $(round(depth_m[2] - depth_m[1], digits=2)) m between nodes"
 
 # ╔═╡ 234d9744-0550-4485-82d1-b6a74ba6f1be
-qc_avg_base = get_average_qc_at_pile_base(depth_m, qc_MPa, pile_toe_depth, pile_diameter, scale_to_30pct = false)
+qc_avg_base = get_average_qc_at_pile_base(depth_m, qc_MPa, pile_toe_depth, pile_diameter, clip_to_30pct = false)
 
 # ╔═╡ 650d88ea-5bdd-4fb1-b734-9184774681aa
 begin
@@ -902,7 +924,7 @@ end;
 
 # ╔═╡ 786745b9-58b1-4cd4-b495-3833e0b53a81
 """
-	function get_Fr(depth_m::AbstractVector{Float64},  qc_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}; gamma::Float64 = 18.0, a::Float64 = 0.73)\n
+	get_Fr(depth_m::AbstractVector{Float64},  qc_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}; gamma::Float64 = 18.0, a::Float64 = 0.73)\n
 	returns (fₛ / qₙ) * 100
 `a` is the net area ratio of the cone, typically between 0.70 and 0.85\n
 `gamma` is soil unit weight in kN/m², assumed constant over `depth_m`
@@ -1017,13 +1039,8 @@ end
 # ╔═╡ 075ec3aa-666a-43d5-a551-10e6b9a10d3a
 E0 = get_E0(Vs, gamma = gamma_soil, ν = Poisson_ratio)
 
-# ╔═╡ 1d3f7f76-b315-4356-8226-917900999f9f
-begin
-	linearmodel(x,p) = p[1] * x .+ p[2] # define a linear model y = mx + b,  (p = [m,b])
-	p0 = [0.0, 0.0] #initial guess for p = [m, x]
-	E0fit = LsqFit.curve_fit(linearmodel, depth_m, E0, p0) #least squares fit to E0
-	fun_E0_linear(depth) = E0fit.param[1] * depth .+ E0fit.param[2] #linear function
-end;
+# ╔═╡ 81a00b17-402d-4a20-a3ab-38b6eef32f6f
+fun_E0_linear = get_least_squares_interpolator(depth_m, E0);
 
 # ╔═╡ 0b104fff-80fe-43e9-be05-99521aeb0535
 E_L = fun_E0_linear(pile_toe_depth);
@@ -1205,7 +1222,7 @@ Statistics = "~1.11.1"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.2"
+julia_version = "1.11.3"
 manifest_format = "2.0"
 project_hash = "dbeb52134304a33ac630c63fd0b217a563da522f"
 
@@ -2953,7 +2970,7 @@ version = "3.6.0+0"
 # ╟─93606b0b-7294-424a-8edc-3e7901fae6fd
 # ╠═075ec3aa-666a-43d5-a551-10e6b9a10d3a
 # ╟─f5546bf5-78e7-413e-b9f3-9bb6005438b6
-# ╠═1d3f7f76-b315-4356-8226-917900999f9f
+# ╠═81a00b17-402d-4a20-a3ab-38b6eef32f6f
 # ╟─f32428f3-b5c7-430f-bb2b-f9be098fcf53
 # ╟─c10cfbb3-1f57-4884-a2bc-f2e5827e0b2e
 # ╠═201ebe2b-fdaa-430d-b1d4-090f4c39a9b7
@@ -3019,8 +3036,11 @@ version = "3.6.0+0"
 # ╟─53ef7ea8-93f5-466d-a7ae-66819ac8c1dc
 # ╠═aa4bfc30-6e61-48b9-805e-7d7088946de7
 # ╟─688d3ba7-5e44-460c-960a-d5274ab3bf7a
+# ╠═95d989c4-63a7-4ad4-afd5-76558d890ece
+# ╠═51db1dee-2dad-4f41-bc53-cd97d803fa34
+# ╟─f4929686-6348-4451-8295-3d35008371f9
 # ╠═e79dd3ba-cdf5-423f-a74e-7be61dec855c
-# ╟─e3e6d0ab-a3d8-4151-844f-5472a590368f
+# ╠═e3e6d0ab-a3d8-4151-844f-5472a590368f
 # ╠═a8e9e335-d8b9-4bd9-a35d-b46774fbb591
 # ╟─1eeb958f-6b75-4ae6-97f1-e6e63f705fac
 # ╠═79256d96-3d30-4ca6-87fc-c29d8217bf68
@@ -3059,6 +3079,6 @@ version = "3.6.0+0"
 # ╠═f2c80b33-9646-4bee-8c15-12382a2c945c
 # ╟─acdbf8f9-7c7e-4e2c-86bd-5ba7b301a5ee
 # ╠═febeea9a-5459-44b9-b9a2-d6d976f6b016
-# ╠═d59bee90-58d4-444a-903b-9716efcf4d8a
+# ╟─d59bee90-58d4-444a-903b-9716efcf4d8a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
