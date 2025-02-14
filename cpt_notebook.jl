@@ -33,6 +33,11 @@ end
 # ╔═╡ d1b05e7f-a074-43d9-be90-cd8381ea0c39
 PlutoUI.TableOfContents(title = "Table of contents")
 
+# ╔═╡ 7427ecd6-0dda-4284-948e-e5902c63daa1
+md""" # Pile response based on CPT data
+**Author:** Antony Orton $nbsp4 $nbsp4[https://github.com/antonyorton/PileResponse.jl](https://github.com/antonyorton/PileResponse.jl)
+"""
+
 # ╔═╡ 38c42433-425f-4f38-a99a-5ed2e4977ac9
 md"""Introduction
 -----------------
@@ -40,7 +45,7 @@ md"""Introduction
 
 # ╔═╡ 7f303256-ef8d-46e1-b21b-f02d9a4ec0fb
 md"""
-This Julia (Pluto) notebook is designed to provide an assessment of the load-deflection response of a pile head under static vertical load. The assessment depends on the pile type and the results of a single cone penetrometer test (CPT) conducted to at least the design toe level of the pile.\
+This notebook is designed to provide an assessment of the load-deflection response of a pile head under static vertical load. The assessment depends on the pile type and the results of a single cone penetrometer test (CPT) conducted to at least the design toe level of the pile.\
 \
 The assessment of ultimate pile shaft and base capacities follows the approach outlined by Frank (2017). The assessment of the non linear load-deflection response is based on the initial pile head stiffness estimated by the Randolph and Wroth (1978) formula. The pile head stiffness is then factored down for increasing loads following the equation proposed by Mayne (2001).\
 \
@@ -64,10 +69,6 @@ Robertson, P. K. and Cabal, K. (2022). Guide to cone penetration testing. 7th Ed
 # ╔═╡ 387f30fb-3b91-405d-bb11-436f3e45f188
 md"""Pile test details
 --------
-
-!!! note
-	This section contains details of the pile load test.
-
 A pile load test will be carried out at Mobile, Alabama. The test comprises a 457 mm diameter, 9.5 mm wall, closed-toe, steel-pipe pile to be driven to 17.0 m below ground and grouted after driving. The pile will stick up approximately 0.9 m above ground.\
 \
 **Site conditions**\
@@ -80,7 +81,7 @@ The site is level, with the soil profile consisting of material with 90% sand, a
 # ╔═╡ ab327aef-981f-4898-be56-bfac4852ebd8
 md""" Soil and pile properties
 --------
-Assign properites to the soil and pile variables."""
+"""
 
 # ╔═╡ 7b404570-cebd-44af-8b87-7179cc2fb1f3
 md"""
@@ -143,9 +144,6 @@ begin
 	Epile = ((Aouter - Ainner) * Eouter + Ainner * Einner )/ Aouter
 end
 
-# ╔═╡ d054f124-0e73-40d1-b7af-a0bbab49abb8
-pi
-
 # ╔═╡ 7e9b0f08-1304-47f6-b981-9a4c001df324
 md"Pile Young's modulus (MPa)"
 
@@ -174,18 +172,24 @@ The CPT data must include ``q_{c}``, ``f_{s}`` and ``u_{2}`` data. Note, however
 
 """
 
+# ╔═╡ d8728f41-547d-4e4e-a1d0-689a53ac7d28
+md"""
+!!! attention
+    Carefully check the (relative) path and the delimeter in the above function.
+"""
+
 # ╔═╡ 46790341-9cae-455b-b0b1-231c10f5c6e1
-md"View the column headers from the input file."
+md"Obtain the column names from the input file."
 
 # ╔═╡ 7e38b7c1-5325-4c94-96c8-b06a2fc2c561
-md"""**Assign keys to variables** - be careful not to confuse `u` with `u2`."""
+md"""**Assign keys to variables** - this is automated, however the input file must have column names which contain "qc", "fs", "u2" and "depth"."""
 
 # ╔═╡ ec1769aa-2424-4aed-8696-e157fab03673
-md"""Review that the following assignments match the input file column names. If not, adjust the indices in the cell above as required."""
+md"""Review that the following assignments match the input file column names. If not, update your input file to use common names "qc", "fs", "u2" and "depth"."""
 
 # ╔═╡ a3337224-351b-4776-9226-36ece5318f56
 md"""
-!!! note
+!!! attention
     Check that the above list corresponds to the correct column names from the input file.
 """
 
@@ -203,7 +207,7 @@ In this section, the user specifies parameters to assign the number of nodes alo
 
 # ╔═╡ 29115972-de54-48b7-b91e-3b747f249f4a
 md"""**Smooth the data** using a B-Spline approximation\
- $(nbsp) (see [DataInterpolations.jl](https://docs.sciml.ai/DataInterpolations/stable/) for further details)"""
+ $(nbsp4) (see [DataInterpolations.jl](https://docs.sciml.ai/DataInterpolations/stable/) for further details)"""
 
 # ╔═╡ e159c66d-36c2-409a-b287-f07e381f8c6a
 md"**Parameters** to adjust the smoothing and coarseness of the data for analysis"
@@ -290,9 +294,7 @@ md"""--------------"""
 
 # ╔═╡ e5a03703-8dfb-413a-8df9-67896cf9b2f4
 	md"""
-**Soil types**
-\
-	\
+**Soil types**\
 The calculation of pile ultimate resistance, following the appoach of Frank (2017), relies on several factors which require a soil type.
 Using the assessed ``I_{c}`` value, the soil types required for the assessment are defined in this notebook as follows:\
 \
@@ -318,7 +320,19 @@ md"""
 """
 
 # ╔═╡ 35138641-da56-41d2-a266-3e0de45a832d
-md"The ultimate capacity is then the sum of the ultimate shaft and base capacities."
+md"The ultimate pile load is then the sum of the ultimate shaft and base resistances."
+
+# ╔═╡ 03e1dd77-669d-46b2-bff0-8e23fef7cf39
+md"""Pile design capacity
+-------------------------
+"""
+
+# ╔═╡ 3a4fc7e3-cf0c-4ada-ae84-17de8ac74f52
+md"""
+!!! note
+
+	The `allowable_pile_head_settlement_m` can be adjusted in the pile properties section above.
+"""
 
 # ╔═╡ b518a716-062b-4e91-bff8-cbd51e09be1d
 md"""-----------------"""
@@ -328,23 +342,22 @@ md"""Pile load-displacement response
 ---------------------------------
 """
 
+# ╔═╡ fe095cea-69a2-46a1-823c-dc1bb7613469
+md"""
+### Pile load displacement curve
+"""
+
 # ╔═╡ efe4f0cc-b42b-4898-9103-0ca91747d1c8
 md"""
-The load displacement curve is then derived following a method proposed by Mayne (2001), based on work by Fahey and Carter (1993), which assumes that the pile head stiffness varies as a function of the load ratio ``P/P_{ult}``:\
+The load displacement curve is derived following a method proposed by Mayne (2001), based on work by Fahey and Carter (1993), which assumes that the pile head stiffness varies as a function of the load ratio ``P/P_{ult}``:\
 \
  $(nbsp4)``k = k_{0} \cdot (1 - (P/P_{ult})^{0.3})``
 \
 \
 """
 
-# ╔═╡ fe095cea-69a2-46a1-823c-dc1bb7613469
-md"""
-### Pile load displacement curve
-"""
-
 # ╔═╡ fef5eba2-7457-4bdf-a889-3650ba38335f
 md"""### Load carried by pile shaft at capacity
--------------------------------------------
 """
 
 # ╔═╡ 9ea12381-d2e4-442a-bb67-95fdf5f67437
@@ -358,9 +371,6 @@ md"""Calculate the load (MN) carried by the shaft below a given depth"""
 
 # ╔═╡ 6c5bdbe9-3253-4f6e-87aa-d62ba21016d2
 md"""### Load distribution along pile shaft at capacity"""
-
-# ╔═╡ 717159ea-ae54-4ddc-be21-1e189c8f0099
-
 
 # ╔═╡ 4e9ef2a1-e2a0-4209-8eb5-6212fb4fdb5f
 md"""---------------------
@@ -386,9 +396,6 @@ md"Plot configuration for Ic, Vs and E₀"
 # ╔═╡ 688d3ba7-5e44-460c-960a-d5274ab3bf7a
 md"""## Appendix 2: Functions
 """
-
-# ╔═╡ 95d989c4-63a7-4ad4-afd5-76558d890ece
-
 
 # ╔═╡ 51db1dee-2dad-4f41-bc53-cd97d803fa34
 #fun_E0_linear = get_least_squares_interpolator(depth_m, E0);
@@ -637,9 +644,6 @@ end
 # ╔═╡ 2a956b1c-be86-4218-a8d4-e6baafe048dd
 @bind pile_type Select(sort(collect(keys(get_alpha_shaft_CPT2012()))))
 
-# ╔═╡ 91234904-63e7-4949-a7b0-27ad0de2ab5b
-kc = get_kc_base_CPT2012()[pile_type] #kc for [silt and clay, intermediate, sand]
-
 # ╔═╡ 741eb051-a7cc-456a-b992-044d0acd460a
 md""" 
 **Pile type:** $(pile_type).\
@@ -826,6 +830,18 @@ function get_qn(depth_m::AbstractVector{Float64},  qc_MPa::AbstractVector{Float6
 return max.(0.0, qt_MPa .- sigmav0_total) #replace negative values with 0.0
 end
 
+# ╔═╡ 786745b9-58b1-4cd4-b495-3833e0b53a81
+"""
+	get_Fr(depth_m::AbstractVector{Float64},  qc_MPa::AbstractVector{Float64}, fs_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}; gamma::Float64 = 18.0, a::Float64 = 0.73)\n
+	returns (fₛ / qₙ) * 100
+`a` is the net area ratio of the cone, typically between 0.70 and 0.85\n
+`gamma` is soil unit weight in kN/m², assumed constant over `depth_m`
+"""
+function get_Fr(depth_m::AbstractVector{Float64},  qc_MPa::AbstractVector{Float64}, fs_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}; gamma::Float64 = 18.0, a::Float64 = 0.73)
+	qn_MPa = get_qn(depth_m, qc_MPa, u2_MPa, gamma=gamma, a=a)
+	return fs_MPa ./ qn_MPa * 100
+end
+
 # ╔═╡ 756d9e0a-bf48-4135-9225-1a3a4aba094d
 """
 	get_sigmav0_effective(depth_m::AbstractVector{Float64}, gw_depth::Float64, gamma::Float64 = 18.0)\n
@@ -859,6 +875,44 @@ function get_bigQt(depth_m::AbstractVector{Float64},  qc_MPa::AbstractVector{Flo
 	return (qt .- sigmav0) ./ sigmav0effective
 end
 
+# ╔═╡ 5635535b-65fc-4d1f-8b62-6c863885fb46
+"""
+	get_Ic(depth_m::AbstractVector{Float64}, qc_MPa::AbstractVector{Float64}, fs_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}, gw_depth::Float64; gamma::Float64 = 18.0, a::Float64 = 0.73)\n
+	returns [(3.47 - log10(Qt))² + (log10(Fr) + 1.22)²]^0.5
+`gw_depth` is depth to groundwater in metres\n
+`gamma` is soil unit weight in kN/m², assumed constant over `depth_m`\n
+`a` is the net area ratio of the cone, typically between 0.70 and 0.85\n
+"""
+function get_Ic(depth_m::AbstractVector{Float64}, qc_MPa::AbstractVector{Float64}, fs_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}, gw_depth::Float64; gamma::Float64 = 18.0, a::Float64 = 0.73)
+	Qt = get_bigQt(depth_m, qc_MPa, u2_MPa, gw_depth, gamma=gamma, a=a)
+	Fr = get_Fr(depth_m, qc_MPa, fs_MPa, u2_MPa, gamma=gamma, a=a)
+	Fr[Fr .< 0] .= 0.0
+	Qt[Qt .< 0] .= 0.0
+	Ic = ((3.47 .- log10.(Qt)).^2 .+ (log10.(Fr) .+ 1.22).^2).^0.5
+	# Deal with troublesome cases
+	Ic[.!isfinite.(Ic)] .= 3.0
+	Ic[Ic .> 3.0] .= 3.0
+	
+	return Ic
+end
+
+# ╔═╡ 9efc1e45-da4a-4ec4-a324-d4ba409d82d9
+"""
+	get_Vs(depth_m::AbstractVector{Float64}, qc_MPa::AbstractVector{Float64}, fs_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}, gw_depth::Float64; gamma::Float64 = 18.0, a::Float64 = 0.73)\n
+	returns (αᵥₛ * qn / pa)^0.5
+		where αᵥₛ = 10^(0.55 * Ic + 1.68)
+`gw_depth` is depth to groundwater in metres\n
+`gamma` is soil unit weight in kN/m², assumed constant over `depth_m`\n
+`a` is the net area ratio of the cone, typically between 0.70 and 0.85\n
+"""
+function get_Vs(depth_m::AbstractVector{Float64}, qc_MPa::AbstractVector{Float64}, fs_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}, gw_depth::Float64; gamma::Float64 = 18.0, a::Float64 = 0.73)
+	pa = 0.101 #atmospheric pressure (MPa)
+	qn = get_qn(depth_m, qc_MPa, u2_MPa, gamma=gamma, a=a)
+	Ic = get_Ic(depth_m, qc_MPa, fs_MPa, u2_MPa, gw_depth, gamma=gamma, a=a)
+	αvs = 10.0.^(0.55 .* Ic .+ 1.68)
+	return (αvs .* qn / pa).^0.5
+end 
+
 # ╔═╡ febeea9a-5459-44b9-b9a2-d6d976f6b016
 # read_delimited_text_file("../data/CPT-B1.csv", delim='\t', T=Float64)
 
@@ -877,13 +931,18 @@ function read_delimited_text_file(filepath::String; delim::AbstractChar=',', T::
 end
 
 # ╔═╡ acb1bb78-6ff9-4b9a-85bd-b56c726635a1
-data = read_delimited_text_file("../data/CPT-B1.csv",delim = '\t'); #set delim = ',' for comma delimited text files
+data = read_delimited_text_file("../data/CPT-B1.csv",delim = '\t');
 
 # ╔═╡ a8117f4a-a2fb-4a5f-bce2-0f88819a22a8
-mykeys = collect(keys(data))
+column_names = collect(keys(data));
 
-# ╔═╡ 0bb37f68-dc70-4540-8902-9fc6d737da47
-qc_col = mykeys[2]; depth_col = mykeys[3]; u2_col = mykeys[4]; fs_col = mykeys[5];
+# ╔═╡ 715576a6-6f90-43c6-9e81-6af467429ae6
+begin
+	depth_col = [item for item in column_names if occursin("depth",lowercase(item))][1]
+	qc_col = [item for item in column_names if occursin("qc",lowercase(item))][1]
+	fs_col = [item for item in column_names if occursin("fs",lowercase(item))][1]
+	u2_col = [item for item in column_names if occursin("u2",lowercase(item))][1]
+end;
 
 # ╔═╡ 779a21a3-82b0-4d22-95dd-d1f896b3a272
 [qc_col, depth_col, fs_col, u2_col]
@@ -909,70 +968,74 @@ end;
 # ╔═╡ c166a7d0-39b8-4f03-bab7-984722cdfda2
 md"The adopted `num_steps_along_pile` results in a spacing of $(round(depth_m[2] - depth_m[1], digits=2)) m between nodes"
 
-# ╔═╡ 234d9744-0550-4485-82d1-b6a74ba6f1be
-qc_avg_base = get_average_qc_at_pile_base(depth_m, qc_MPa, pile_toe_depth, pile_diameter, clip_to_30pct = false)
-
-# ╔═╡ 650d88ea-5bdd-4fb1-b734-9184774681aa
-begin
-	ytick_min = -floor(round(depth_m[end], digits = 2)) - 1.0; #ymin
-	mylimits = (0.0, nothing, ytick_min, 0.001) #(xmin,xmax,ymin,ymax)
-	markersize = 4.0;
-	rasterize = 3;
-	axislabelsize = 10
-	defaultlinecolour = color = RGBAf(0.2,0.6,0.2)
-end;
-
-# ╔═╡ 786745b9-58b1-4cd4-b495-3833e0b53a81
-"""
-	get_Fr(depth_m::AbstractVector{Float64},  qc_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}; gamma::Float64 = 18.0, a::Float64 = 0.73)\n
-	returns (fₛ / qₙ) * 100
-`a` is the net area ratio of the cone, typically between 0.70 and 0.85\n
-`gamma` is soil unit weight in kN/m², assumed constant over `depth_m`
-"""
-function get_Fr(depth_m::AbstractVector{Float64},  qc_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}; gamma::Float64 = 18.0, a::Float64 = 0.73)
-	qn_MPa = get_qn(depth_m, qc_MPa, u2_MPa, gamma=gamma, a=a)
-	return fs_MPa ./ qn_MPa * 100
-end
-
-# ╔═╡ 5635535b-65fc-4d1f-8b62-6c863885fb46
-"""
-	get_Ic(depth_m::AbstractVector{Float64}, qc_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}, gw_depth::Float64; gamma::Float64 = 18.0, a::Float64 = 0.73)\n
-	returns [(3.47 - log10(Qt))² + (log10(Fr) + 1.22)²]^0.5
-`gw_depth` is depth to groundwater in metres\n
-`gamma` is soil unit weight in kN/m², assumed constant over `depth_m`\n
-`a` is the net area ratio of the cone, typically between 0.70 and 0.85\n
-"""
-function get_Ic(depth_m::AbstractVector{Float64}, qc_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}, gw_depth::Float64; gamma::Float64 = 18.0, a::Float64 = 0.73)
-	Qt = get_bigQt(depth_m, qc_MPa, u2_MPa, gw_depth, gamma=gamma, a=a)
-	Fr = get_Fr(depth_m, qc_MPa, u2_MPa, gamma=gamma, a=a)
-	Fr[Fr .< 0] .= 0.0
-	Qt[Qt .< 0] .= 0.0
-	Ic = ((3.47 .- log10.(Qt)).^2 .+ (log10.(Fr) .+ 1.22).^2).^0.5
-	# Deal with troublesome cases
-	Ic[.!isfinite.(Ic)] .= 3.0
-	Ic[Ic .> 3.0] .= 3.0
-	
-	return Ic
-end
-
 # ╔═╡ 8414a932-8391-4e47-9912-f7039f1ccdb3
-Ic = get_Ic(depth_m, qc_MPa, u2_MPa, gw_depth, gamma = gamma_soil, a = 0.73)
+Ic = get_Ic(depth_m, qc_MPa, fs_MPa, u2_MPa, gw_depth, gamma = gamma_soil, a = 0.73);
 
 # ╔═╡ 00a15171-61c0-4ed8-8db6-203cc288fba6
-soil_type_CPT2012 = get_soil_type_CPT2012(Ic)
+soil_type_CPT2012 = get_soil_type_CPT2012(Ic);
+
+# ╔═╡ 8f23be3d-ba6a-4340-8169-7881eaf7ddea
+	Vs = get_Vs(depth_m, qc_MPa, fs_MPa, u2_MPa, gw_depth, gamma = gamma_soil, a = 0.73);
+
+# ╔═╡ 075ec3aa-666a-43d5-a551-10e6b9a10d3a
+E0 = get_E0(Vs, gamma = gamma_soil, ν = Poisson_ratio);
+
+# ╔═╡ 81a00b17-402d-4a20-a3ab-38b6eef32f6f
+fun_E0_linear = get_least_squares_interpolator(depth_m, E0);
+
+# ╔═╡ 0b104fff-80fe-43e9-be05-99521aeb0535
+begin
+	E_L = fun_E0_linear(pile_toe_depth)
+	E_Lon2 = fun_E0_linear(pile_toe_depth / 2)
+	k0 = get_initial_pile_head_stiffness(pile_toe_depth, pile_diameter, Epile_MPa, E_L, E_Lon2, ν = Poisson_ratio)
+end;
+
+# ╔═╡ 7d5bfca5-5ebd-4e5a-8d7f-0e9c1684a922
+md"""
+The small strain elastic modulus along the pile shaft is assumed to vary linearly, and a least squares approximation gives:\
+\
+ $(nbsp4)``E_{L}``: ( $(floor(Int64, round(E_L))) MPa ) The small strain elastic modulus at the base of the shaft.\
+$(nbsp4)``E_{L/2}``: ( $(floor(Int64, round(E_Lon2))) MPa ) The small strain elastic modulus at the midpoint of the shaft.\
+"""
+
+# ╔═╡ 64013deb-af90-465d-a8f5-581e0f6baab6
+md"""The initial pile head stiffness, ``k_{0}``, taking account of pile compressibility, is computed following the closed form elastic solution by Randolph and Wroth (1978) as:\
+\
+ $(nbsp4)``k_{0}``: ( $(floor(Int64, round(k0))) MN/m ) The initial pile head stiffness.\
+"""
+
+# ╔═╡ d8c6bcc9-355d-46ca-b13a-e130e8895ede
+begin
+	fshaft_MPa = get_ultimate_shaft_resistance(qc_MPa, Ic, pile_type, factor = 1.0);
+	ult_shaft_MN = pi * pile_diameter * mean(fshaft_MPa[depth_m .<= pile_toe_depth .&& depth_m .> 0.0]) * pile_toe_depth;
+end;
+
+# ╔═╡ 433be51b-8738-42d2-92c0-0f62344aab3f
+md"""
+The ultimate shaft resistance, **``f_{s}`` = $(round(ult_shaft_MN, digits = 2)) MN**, is obtained as follows:\
+\
+ $nbsp $nbsp``f_{s} = \alpha\cdot f_{sol}`` $nbsp $nbsp $nbsp $nbsp with ``f_{sol} \leq f_{smax}`` $nbsp where:\
+
+- ``f_{sol}`` is the unfactored shaft resistance dependent on ``q_{c}`` and soil type.
+- ``\alpha`` is a factor dependent on soil type and pile type.\
+- ``f_{smax}`` is a the limiting shaft resistance dependent on soil type and pile type.
+"""
+
+# ╔═╡ 234d9744-0550-4485-82d1-b6a74ba6f1be
+qc_avg_base = round(get_average_qc_at_pile_base(depth_m, qc_MPa, pile_toe_depth, pile_diameter, clip_to_30pct = false), digits = 3)
 
 # ╔═╡ 673a87a4-569d-4c33-ae3e-98debc89df73
-kc_at_base = kc[soil_type_CPT2012[depth_m .== pile_toe_depth]][1]
-
-# ╔═╡ a25c7e59-ffed-4528-b959-468ee8067277
-fb_MPa = kc_at_base * qc_avg_base
+kc_at_base = get_kc_base_CPT2012()[pile_type][soil_type_CPT2012[depth_m .== pile_toe_depth]][1]
 
 # ╔═╡ d50e9d4c-2962-4735-bea8-4bd20d120f32
-ult_base_MN = round(pi * pile_diameter ^2 / 4 * fb_MPa, digits = 3)
+begin
+	fb_MPa = kc_at_base * qc_avg_base;
+	ult_base_MN = pi * pile_diameter ^2 / 4 * fb_MPa
+end;
 
 # ╔═╡ a30fb07b-ec4a-4e41-be61-70718894516a
 md"""
-The ultimate base resistance, **``f_{b}`` = $(ult_base_MN) MN**, is obtained as follows:\
+The ultimate base resistance, **``f_{b}`` = $(round(ult_base_MN, digits = 2)) MN**, is obtained as follows:\
 
  
  $nbsp $nbsp``f_{b} = k_{c}\cdot q_{ca}`` $nbsp where:\
@@ -984,146 +1047,32 @@ $nbsp $nbsp $nbsp $nbsp``q_{ca}`` is the equavalent average cone resistance at t
 \
 """
 
-# ╔═╡ d8c6bcc9-355d-46ca-b13a-e130e8895ede
-fshaft_MPa = get_ultimate_shaft_resistance(qc_MPa, Ic, pile_type, factor = 1.0)
-
-# ╔═╡ e4f3b3bb-f913-400f-b0e0-bcb2cba01d09
-ult_shaft_MN = round(pi * pile_diameter * mean(fshaft_MPa[depth_m .<= pile_toe_depth .&& depth_m .> 0.0]) * pile_toe_depth, digits = 3)
-
-# ╔═╡ 433be51b-8738-42d2-92c0-0f62344aab3f
-md"""
-The ultimate shaft resistance, **``f_{s}`` = $(ult_shaft_MN) MN**, is obtained as follows:\
-\
- $nbsp $nbsp``f_{s} = \alpha\cdot f_{sol}`` $nbsp $nbsp $nbsp $nbsp with ``f_{sol} \leq f_{smax}`` $nbsp where:\
-
-- ``f_{sol}`` is the unfactored shaft resistance dependent on ``q_{c}`` and soil type.
-- ``\alpha`` is a factor dependent on soil type and pile type.\
-- ``f_{smax}`` is a the limiting shaft resistance dependent on soil type and pile type.
-"""
-
 # ╔═╡ f40fc671-1cd6-4b31-a1b3-a5da433f8805
-pile_ult_resistance = round(ult_shaft_MN + ult_base_MN, digits = 3);
+pile_ult_load = round(ult_shaft_MN + ult_base_MN, digits = 3);
 
 # ╔═╡ b4291248-c6f6-49ae-b702-b64169a96b3a
 md"""
-The ulitimate resistance of the pile is **$(pile_ult_resistance) MN**, comprising:
+The ulitimate resistance of the pile is **$(round(pile_ult_load, digits = 2)) MN**, comprising:
 
- * Ultimate shaft resistance of $(ult_shaft_MN) MN.
- * Ultimate base resistance of $(ult_base_MN) MN.
+ * Ultimate shaft resistance of $(round(ult_shaft_MN, digits = 2)) MN.
+ * Ultimate base resistance of $(round(ult_base_MN, digits = 2)) MN.
 The sections below provide details on the caculation.
 """
 
 # ╔═╡ e5af32ab-6eb3-46d5-8a13-6d6efb8c8e9d
-pile_head_loads = 0.01:0.001:0.90*pile_ult_resistance; #use small load step of 0.01
-
-# ╔═╡ 9efc1e45-da4a-4ec4-a324-d4ba409d82d9
-"""
-	get_Vs(depth_m::AbstractVector{Float64}, qc_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}, gw_depth::Float64; gamma::Float64 = 18.0, a::Float64 = 0.73)\n
-	returns (αᵥₛ * qn / pa)^0.5
-		where αᵥₛ = 10^(0.55 * Ic + 1.68)
-`gw_depth` is depth to groundwater in metres\n
-`gamma` is soil unit weight in kN/m², assumed constant over `depth_m`\n
-`a` is the net area ratio of the cone, typically between 0.70 and 0.85\n
-"""
-function get_Vs(depth_m::AbstractVector{Float64}, qc_MPa::AbstractVector{Float64}, u2_MPa::AbstractVector{Float64}, gw_depth::Float64; gamma::Float64 = 18.0, a::Float64 = 0.73)
-	pa = 0.101 #atmospheric pressure (MPa)
-	qn = get_qn(depth_m, qc_MPa, u2_MPa, gamma=gamma, a=a)
-	Ic = get_Ic(depth_m, qc_MPa, u2_MPa, gw_depth, gamma=gamma, a=a)
-	αvs = 10.0.^(0.55 .* Ic .+ 1.68)
-	return (αvs .* qn / pa).^0.5
-end 
-
-# ╔═╡ 8f23be3d-ba6a-4340-8169-7881eaf7ddea
-	Vs = get_Vs(depth_m, qc_MPa, u2_MPa, gw_depth, gamma = gamma_soil, a = 0.73)
-
-# ╔═╡ 075ec3aa-666a-43d5-a551-10e6b9a10d3a
-E0 = get_E0(Vs, gamma = gamma_soil, ν = Poisson_ratio)
-
-# ╔═╡ 81a00b17-402d-4a20-a3ab-38b6eef32f6f
-fun_E0_linear = get_least_squares_interpolator(depth_m, E0);
-
-# ╔═╡ 0b104fff-80fe-43e9-be05-99521aeb0535
-E_L = fun_E0_linear(pile_toe_depth);
-
-# ╔═╡ d57d9ea9-1ed4-4f46-bcc5-d498e5a0ac00
-E_Lon2 = fun_E0_linear(pile_toe_depth / 2);
-
-# ╔═╡ 7d5bfca5-5ebd-4e5a-8d7f-0e9c1684a922
-md"""
-The small strain elastic modulus along the pile shaft is assumed to vary linearly, and a least squares approximation gives:\
-\
- $(nbsp4)``E_{L}``: ( $(round(E_L,digits = 0)) MN ) The small strain elastic modulus at the base of the shaft.\
-$(nbsp4)``E_{L/2}``: ( $(round(E_Lon2,digits = 0)) MN ) The small strain elastic modulus at the midpoint of the shaft.\
-"""
-
-# ╔═╡ 6c21fe16-9858-424a-9a4c-890c452e6514
-k0 = get_initial_pile_head_stiffness(pile_toe_depth, pile_diameter, Epile_MPa, E_L, E_Lon2, ν = Poisson_ratio);
-
-# ╔═╡ 64013deb-af90-465d-a8f5-581e0f6baab6
-md"""The initial pile head stiffness, ``k_{0}``, taking account of pile compressibility, is computed following the closed form elastic solution by Randolph and Wroth (1978) as:\
-\
- $(nbsp4)``k_{0}``: ( $(round(k0,digits = 0)) MN/m ) The initial pile head stiffness.\
-"""
+pile_head_loads = 0.01:0.001:0.90*pile_ult_load; #use small load step
 
 # ╔═╡ 4f9e4011-e02e-4fb7-a76f-d4ac0ca3ad43
-displacement = get_pile_head_displacement(k0, pile_head_loads, pile_ult_resistance);
+displacement = get_pile_head_displacement(k0, pile_head_loads, pile_ult_load);
 
 # ╔═╡ dc029c10-1afb-4401-85c9-732aa7962510
-pile_capacity_MN = round(pile_head_loads[argmin(abs.(displacement .- allowable_pile_head_settlement_m))],digits = 5)
+pile_capacity_MN = round(pile_head_loads[argmin(abs.(displacement .- allowable_pile_head_settlement_m))],digits = 2);
 
-# ╔═╡ 03e1dd77-669d-46b2-bff0-8e23fef7cf39
-md"""Pile design capacity
--------------------------
-\
+# ╔═╡ 380622fb-3e25-4259-9ae0-45af9fd88d0c
+md"""
 The pile design capacity is **$(pile_capacity_MN) MN**.\
 \
 This is the load at which the (user defined) allowable pile head settlement of $(allowable_pile_head_settlement_m) m is reached.
-
-The `allowable_pile_head_settlement_m` variable can be adjusted in the pile properties section above.
-"""
-
-# ╔═╡ 723a758c-941e-450f-ac2c-60b6a7e140db
-capacity_factor = round(pile_capacity_MN / pile_ult_resistance, digits = 3);
-
-# ╔═╡ c58cb696-e3f6-441d-81f1-5e4915db081d
-md""" The pile capacity is assessed to be $(round(100 * capacity_factor, digits = 0)) % of the ultimate load."""
-
-# ╔═╡ 97e12fce-2e96-49fd-8476-0ea178de8c97
-fshaft_factored = get_ultimate_shaft_resistance(qc_MPa, Ic, pile_type, factor = capacity_factor);
-
-# ╔═╡ 338baa40-0742-4e48-9aca-6e7489c45e1b
-Qshaft_factored = append!([0.0],pi * pile_diameter * (depth_m[2:end] .- depth_m[1:end-1]) .* 0.5 .* (fshaft_factored[2:end] .+ fshaft_factored[1:end-1]));
-
-# ╔═╡ bb86eff9-f3ea-4ade-ae3c-5feeac9d8e34
-begin 
-	mydepth = depth_m[depth_m .<= pile_toe_depth]
-	myshaftload = zeros(Float64,length(mydepth))
-	myshaftload[1] = capacity_factor * pile_ult_resistance
-	for i=2:length(mydepth)
-		myshaftload[i] = myshaftload[i-1] - Qshaft_factored[i]
-	end
-	# get the loads carried by shaft and base at capacity
-	total_shaft_MN_at_capacity = pile_ult_resistance * capacity_factor - myshaftload[end];
-	total_base_MN_at_capacity = pile_ult_resistance * capacity_factor - total_shaft_MN_at_capacity;
- end;
-
-# ╔═╡ b1b1c43f-cc35-4c18-a4ff-5ea0fb8996e6
-begin
-	figShaftLoad = Figure(size = (350,600))
-	Axis(figShaftLoad[1,1], xticks = (0:0.5:pile_ult_resistance), yticks = (ytick_min:0), limits = ((0,pile_ult_resistance), (-pile_toe_depth - 1, 0)), xlabel = "Load (MN)", ylabel = "Elevation (m)")
-	lines!(myshaftload, -mydepth)
-	figShaftLoad
-end
-
-# ╔═╡ 789627e2-0e67-4692-b750-a155b9f16790
-show_table([-mydepth, myshaftload],["Elevation (m)", "Load (MN)"], num_rows=15, formatters = ft_printf("%5.3f"))
-
-# ╔═╡ f2a332dd-c5fa-4a89-a2d7-89818f3f23b3
-md"""
-The load carried by the pile at capacity is $(pile_capacity_MN) MN, comprising:\
-
- -  $(round(total_shaft_MN_at_capacity, digits = 3)) MN carried by the shaft\
- -  $(round(total_base_MN_at_capacity, digits = 3)) MN carried by the base
 """
 
 # ╔═╡ 4e9ccc3b-e977-4f15-b0c5-7c5daca84901
@@ -1148,6 +1097,60 @@ end;
 
 # ╔═╡ 8f9a73f7-d3ab-4f05-b5cc-7daeab7afd66
 figDisp
+
+# ╔═╡ 723a758c-941e-450f-ac2c-60b6a7e140db
+capacity_factor = round(pile_capacity_MN / pile_ult_load, digits = 3);
+
+# ╔═╡ c58cb696-e3f6-441d-81f1-5e4915db081d
+md""" The pile capacity is assessed to be $(round(100 * capacity_factor, digits = 0)) % of the ultimate load."""
+
+# ╔═╡ 97e12fce-2e96-49fd-8476-0ea178de8c97
+fshaft_factored = get_ultimate_shaft_resistance(qc_MPa, Ic, pile_type, factor = capacity_factor);
+
+# ╔═╡ 338baa40-0742-4e48-9aca-6e7489c45e1b
+Qshaft_factored = append!([0.0],pi * pile_diameter * (depth_m[2:end] .- depth_m[1:end-1]) .* 0.5 .* (fshaft_factored[2:end] .+ fshaft_factored[1:end-1]));
+
+# ╔═╡ bb86eff9-f3ea-4ade-ae3c-5feeac9d8e34
+begin 
+	mydepth = depth_m[depth_m .<= pile_toe_depth]
+	myshaftload = zeros(Float64,length(mydepth))
+	myshaftload[1] = capacity_factor * pile_ult_load
+	for i=2:length(mydepth)
+		myshaftload[i] = myshaftload[i-1] - Qshaft_factored[i]
+	end
+	# get the loads carried by shaft and base at capacity
+	total_shaft_MN_at_capacity = pile_ult_load * capacity_factor - myshaftload[end];
+	total_base_MN_at_capacity = pile_ult_load * capacity_factor - total_shaft_MN_at_capacity;
+ end;
+
+# ╔═╡ f2a332dd-c5fa-4a89-a2d7-89818f3f23b3
+md"""
+The load carried by the pile at capacity is $(pile_capacity_MN) MN, comprising:\
+
+ -  $(round(total_shaft_MN_at_capacity, digits = 3)) MN carried by the shaft\
+ -  $(round(total_base_MN_at_capacity, digits = 3)) MN carried by the base
+"""
+
+# ╔═╡ 789627e2-0e67-4692-b750-a155b9f16790
+show_table([-mydepth, myshaftload],["Elevation (m)", "Load (MN)"], num_rows=15, formatters = ft_printf("%5.3f"))
+
+# ╔═╡ 650d88ea-5bdd-4fb1-b734-9184774681aa
+begin
+	ytick_min = -floor(round(depth_m[end], digits = 2)) - 1.0; #ymin
+	mylimits = (0.0, nothing, ytick_min, 0.001) #(xmin,xmax,ymin,ymax)
+	markersize = 4.0;
+	rasterize = 3;
+	axislabelsize = 10
+	defaultlinecolour = color = RGBAf(0.2,0.6,0.2)
+end;
+
+# ╔═╡ b1b1c43f-cc35-4c18-a4ff-5ea0fb8996e6
+begin
+	figShaftLoad = Figure(size = (350,600))
+	Axis(figShaftLoad[1,1], xticks = (0:0.5:pile_ult_load), yticks = (ytick_min:0), limits = ((0,pile_ult_load), (-pile_toe_depth - 1, 0)), xlabel = "Load (MN)", ylabel = "Elevation (m)")
+	lines!(myshaftload, -mydepth)
+	figShaftLoad
+end
 
 # ╔═╡ aa4bfc30-6e61-48b9-805e-7d7088946de7
 begin
@@ -2914,6 +2917,7 @@ version = "3.6.0+0"
 # ╔═╡ Cell order:
 # ╠═ca156a62-ce63-11ef-32b1-bd2ade8dcf4c
 # ╠═d1b05e7f-a074-43d9-be90-cd8381ea0c39
+# ╟─7427ecd6-0dda-4284-948e-e5902c63daa1
 # ╟─38c42433-425f-4f38-a99a-5ed2e4977ac9
 # ╟─7f303256-ef8d-46e1-b21b-f02d9a4ec0fb
 # ╟─387f30fb-3b91-405d-bb11-436f3e45f188
@@ -2934,7 +2938,6 @@ version = "3.6.0+0"
 # ╠═88c706e2-7e38-4f3f-a257-16d522f964e7
 # ╟─13a9ad72-1687-4b6c-998e-035be8e93918
 # ╠═eb7b6073-d5b3-4bde-b390-5cc76b7d2cff
-# ╠═d054f124-0e73-40d1-b7af-a0bbab49abb8
 # ╟─7e9b0f08-1304-47f6-b981-9a4c001df324
 # ╠═2df2143c-0e08-4bb6-b056-d56cdd4eb21a
 # ╟─6edf2a4b-4672-437e-b8da-d0d91c9f924f
@@ -2942,10 +2945,11 @@ version = "3.6.0+0"
 # ╠═2c47f0aa-22ea-4723-8c85-cadba3443472
 # ╟─805713cf-e4fa-44cd-b694-5ebe05d7637f
 # ╠═acb1bb78-6ff9-4b9a-85bd-b56c726635a1
+# ╟─d8728f41-547d-4e4e-a1d0-689a53ac7d28
 # ╟─46790341-9cae-455b-b0b1-231c10f5c6e1
 # ╠═a8117f4a-a2fb-4a5f-bce2-0f88819a22a8
 # ╟─7e38b7c1-5325-4c94-96c8-b06a2fc2c561
-# ╠═0bb37f68-dc70-4540-8902-9fc6d737da47
+# ╠═715576a6-6f90-43c6-9e81-6af467429ae6
 # ╟─ec1769aa-2424-4aed-8696-e157fab03673
 # ╠═779a21a3-82b0-4d22-95dd-d1f896b3a272
 # ╟─a3337224-351b-4776-9226-36ece5318f56
@@ -2986,29 +2990,26 @@ version = "3.6.0+0"
 # ╟─433be51b-8738-42d2-92c0-0f62344aab3f
 # ╟─d980942c-e160-472b-98eb-a5a939e04d1a
 # ╠═d8c6bcc9-355d-46ca-b13a-e130e8895ede
-# ╠═e4f3b3bb-f913-400f-b0e0-bcb2cba01d09
 # ╟─8cd9047c-3796-46f0-a27f-d98ef86888a6
 # ╟─a30fb07b-ec4a-4e41-be61-70718894516a
-# ╠═91234904-63e7-4949-a7b0-27ad0de2ab5b
 # ╠═234d9744-0550-4485-82d1-b6a74ba6f1be
 # ╠═673a87a4-569d-4c33-ae3e-98debc89df73
-# ╠═a25c7e59-ffed-4528-b959-468ee8067277
 # ╠═d50e9d4c-2962-4735-bea8-4bd20d120f32
 # ╟─35138641-da56-41d2-a266-3e0de45a832d
 # ╠═f40fc671-1cd6-4b31-a1b3-a5da433f8805
 # ╟─03e1dd77-669d-46b2-bff0-8e23fef7cf39
+# ╟─380622fb-3e25-4259-9ae0-45af9fd88d0c
 # ╠═dc029c10-1afb-4401-85c9-732aa7962510
+# ╟─3a4fc7e3-cf0c-4ada-ae84-17de8ac74f52
 # ╟─b518a716-062b-4e91-bff8-cbd51e09be1d
 # ╟─15715b84-c935-4903-ae55-dc115c530dab
 # ╟─7d5bfca5-5ebd-4e5a-8d7f-0e9c1684a922
 # ╟─64013deb-af90-465d-a8f5-581e0f6baab6
-# ╟─efe4f0cc-b42b-4898-9103-0ca91747d1c8
 # ╠═0b104fff-80fe-43e9-be05-99521aeb0535
-# ╠═d57d9ea9-1ed4-4f46-bcc5-d498e5a0ac00
-# ╠═6c21fe16-9858-424a-9a4c-890c452e6514
+# ╟─fe095cea-69a2-46a1-823c-dc1bb7613469
+# ╟─efe4f0cc-b42b-4898-9103-0ca91747d1c8
 # ╠═e5af32ab-6eb3-46d5-8a13-6d6efb8c8e9d
 # ╠═4f9e4011-e02e-4fb7-a76f-d4ac0ca3ad43
-# ╟─fe095cea-69a2-46a1-823c-dc1bb7613469
 # ╟─741eb051-a7cc-456a-b992-044d0acd460a
 # ╟─8f9a73f7-d3ab-4f05-b5cc-7daeab7afd66
 # ╟─4e9ccc3b-e977-4f15-b0c5-7c5daca84901
@@ -3026,7 +3027,6 @@ version = "3.6.0+0"
 # ╟─f2a332dd-c5fa-4a89-a2d7-89818f3f23b3
 # ╟─b1b1c43f-cc35-4c18-a4ff-5ea0fb8996e6
 # ╠═789627e2-0e67-4692-b750-a155b9f16790
-# ╠═717159ea-ae54-4ddc-be21-1e189c8f0099
 # ╟─4e9ef2a1-e2a0-4209-8eb5-6212fb4fdb5f
 # ╟─c0be21b4-a70a-4dc5-b2b9-dba8ff243a99
 # ╟─dc5cb03e-2fda-4f0c-a580-0deada74707d
@@ -3036,7 +3036,6 @@ version = "3.6.0+0"
 # ╟─53ef7ea8-93f5-466d-a7ae-66819ac8c1dc
 # ╠═aa4bfc30-6e61-48b9-805e-7d7088946de7
 # ╟─688d3ba7-5e44-460c-960a-d5274ab3bf7a
-# ╠═95d989c4-63a7-4ad4-afd5-76558d890ece
 # ╠═51db1dee-2dad-4f41-bc53-cd97d803fa34
 # ╟─f4929686-6348-4451-8295-3d35008371f9
 # ╠═e79dd3ba-cdf5-423f-a74e-7be61dec855c
@@ -3061,13 +3060,13 @@ version = "3.6.0+0"
 # ╠═7b2464a3-d9b7-43ab-b4ee-fca07c67089f
 # ╟─76f39ef1-e8bf-4a62-9884-0ff73bedf128
 # ╠═fe36d366-ec55-4272-a19c-55f3cfe13305
-# ╟─9efc1e45-da4a-4ec4-a324-d4ba409d82d9
+# ╠═9efc1e45-da4a-4ec4-a324-d4ba409d82d9
 # ╠═016e4774-af9d-4ae3-8a0a-dbec2d240884
-# ╟─5635535b-65fc-4d1f-8b62-6c863885fb46
+# ╠═5635535b-65fc-4d1f-8b62-6c863885fb46
 # ╠═b2a04e45-498f-4e8f-99d5-3c5080209d35
 # ╟─8a235ac0-daf1-489a-a18c-4b25a4356ceb
 # ╠═2a29efd1-b00f-4b65-8919-bde06e05e239
-# ╟─786745b9-58b1-4cd4-b495-3833e0b53a81
+# ╠═786745b9-58b1-4cd4-b495-3833e0b53a81
 # ╠═2aeefcd0-e69c-44f2-b9a5-fb4b6543bdcd
 # ╟─29274a7e-e1ff-4126-9f08-ebd6a04730c0
 # ╠═016cac01-d0ed-4da4-a078-5dfbd67bc8c3
